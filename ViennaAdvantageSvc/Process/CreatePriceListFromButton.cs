@@ -1652,9 +1652,9 @@ namespace ViennaAdvantageServer.Process
                                 + " INNER JOIN M_PriceList bpl ON bplv.M_PriceList_ID=bpl.M_PriceList_ID INNER JOIN M_product p ON p.M_product_id = ppr.M_product_id LEFT JOIN M_Product_PO po ON (p.M_product_id = po.M_Product_ID"
                                 + " AND po.ISCURRENTVENDOR='Y') LEFT JOIN M_DiscountSchemaLine dl ON dl.M_DiscountSchemaLine_ID = VAPRC_GetPriceListProduct(ppr.M_PRODUCT_ID,NVL( po.c_bpartner_id,0),p.M_Product_Category_ID,p.M_Brand_ID,"
                                 + _DiscountSchema_ID + ") JOIN (SELECT row_num, AD_CLIENT_ID, AD_ORG_ID, basecurrency, M_PRICELIST_VERSION_ID, M_PRODUCT_ID, M_ATTRIBUTESETINSTANCE_ID FROM"
-                                + " (SELECT prd.*, rownum AS row_num FROM (SELECT ppr.AD_CLIENT_ID, ppr.AD_ORG_ID, bpl.C_Currency_ID AS basecurrency, ppr.M_PRICELIST_VERSION_ID, ppr.M_PRODUCT_ID,"
+                                + " (SELECT prd.*, ROW_NUMBER() OVER (ORDER BY prd.M_product_id) AS row_num FROM (SELECT ppr.AD_CLIENT_ID, ppr.AD_ORG_ID, bpl.C_Currency_ID AS basecurrency, ppr.M_PRICELIST_VERSION_ID, ppr.M_PRODUCT_ID,"
                                 + " ppr.M_ATTRIBUTESETINSTANCE_ID FROM M_ProductPrice ppr INNER JOIN M_PriceList_Version bplv ON ppr.M_PriceList_Version_ID=bplv.M_PriceList_Version_ID"
-                                + " INNER JOIN M_PriceList bpl ON bplv.M_PriceList_ID=bpl.M_PriceList_ID WHERE ppr.m_pricelist_version_id = " + _BasePriceList_ID + " ORDER BY ppr.M_product_id, ppr.M_AttributeSetInstance_id ASC) prd)) pp"
+                                + " INNER JOIN M_PriceList bpl ON bplv.M_PriceList_ID=bpl.M_PriceList_ID WHERE ppr.m_pricelist_version_id = " + _BasePriceList_ID + " ORDER BY ppr.M_product_id, ppr.M_AttributeSetInstance_id ASC) prd) z) pp"
                                 + " ON pp.AD_CLIENT_ID = ppr.AD_CLIENT_ID AND pp.AD_ORG_ID = ppr.AD_ORG_ID AND pp.basecurrency = bpl.C_Currency_ID AND pp.M_PRICELIST_VERSION_ID =ppr.M_PRICELIST_VERSION_ID AND pp.M_PRODUCT_ID = ppr.M_PRODUCT_ID"
                                 + " AND pp.M_ATTRIBUTESETINSTANCE_ID = ppr.M_ATTRIBUTESETINSTANCE_ID WHERE ppr.m_pricelist_version_id = " + _BasePriceList_ID + "ORDER BY row_num ) t LEFT JOIN M_DiscountSchemaLine dl ON dl.M_DiscountSchemaLine_ID = t.DisSchema_ID");
                             }
@@ -1673,9 +1673,9 @@ namespace ViennaAdvantageServer.Process
                                 + " INNER JOIN M_PriceList bpl ON bplv.M_PriceList_ID=bpl.M_PriceList_ID INNER JOIN M_product p ON p.M_product_id = ppr.M_product_id LEFT JOIN M_Product_PO po ON (p.M_product_id = po.M_Product_ID"
                                 + " AND po.ISCURRENTVENDOR='Y') LEFT JOIN M_DiscountSchemaLine dl ON dl.M_DiscountSchemaLine_ID = VAPRC_GetPriceListProduct(ppr.M_PRODUCT_ID,NVL( po.c_bpartner_id,0),p.M_Product_Category_ID,p.M_Brand_ID,"
                                 + _DiscountSchema_ID + ") JOIN (SELECT row_num, AD_CLIENT_ID, AD_ORG_ID, basecurrency, M_PRICELIST_VERSION_ID, M_PRODUCT_ID, M_ATTRIBUTESETINSTANCE_ID FROM"
-                                + " (SELECT prd.*, rownum AS row_num FROM (SELECT ppr.AD_CLIENT_ID, ppr.AD_ORG_ID, bpl.C_Currency_ID AS basecurrency, ppr.M_PRICELIST_VERSION_ID, ppr.M_PRODUCT_ID,"
+                                + " (SELECT prd.*, ROW_NUMBER() OVER (ORDER BY prd.M_product_id) AS row_num FROM (SELECT ppr.AD_CLIENT_ID, ppr.AD_ORG_ID, bpl.C_Currency_ID AS basecurrency, ppr.M_PRICELIST_VERSION_ID, ppr.M_PRODUCT_ID,"
                                 + " ppr.M_ATTRIBUTESETINSTANCE_ID FROM M_ProductPrice ppr INNER JOIN M_PriceList_Version bplv ON ppr.M_PriceList_Version_ID=bplv.M_PriceList_Version_ID"
-                                + " INNER JOIN M_PriceList bpl ON bplv.M_PriceList_ID=bpl.M_PriceList_ID WHERE ppr.m_pricelist_version_id = " + _BasePriceList_ID + " ORDER BY ppr.M_product_id, ppr.M_AttributeSetInstance_id ASC) prd)) pp"
+                                + " INNER JOIN M_PriceList bpl ON bplv.M_PriceList_ID=bpl.M_PriceList_ID WHERE ppr.m_pricelist_version_id = " + _BasePriceList_ID + " ORDER BY ppr.M_product_id, ppr.M_AttributeSetInstance_id ASC) prd) z) pp"
                                 + " ON pp.AD_CLIENT_ID = ppr.AD_CLIENT_ID AND pp.AD_ORG_ID = ppr.AD_ORG_ID AND pp.basecurrency = bpl.C_Currency_ID AND pp.M_PRICELIST_VERSION_ID =ppr.M_PRICELIST_VERSION_ID AND pp.M_PRODUCT_ID = ppr.M_PRODUCT_ID"
                                 + " AND pp.M_ATTRIBUTESETINSTANCE_ID = ppr.M_ATTRIBUTESETINSTANCE_ID WHERE ppr.m_pricelist_version_id = " + _BasePriceList_ID + "ORDER BY row_num ) t LEFT JOIN M_DiscountSchemaLine dl ON dl.M_DiscountSchemaLine_ID = t.DisSchema_ID");
                             }

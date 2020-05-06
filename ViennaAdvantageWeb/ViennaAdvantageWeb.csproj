@@ -50,41 +50,38 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="DotNetOpenAuth">
-      <HintPath>..\..\..\ViennaAdvantage_MaterialManagement\ViennaAdvantageWeb\ViennaAdvantageWeb\bin\DotNetOpenAuth.dll</HintPath>
+      <HintPath>DLL\DotNetOpenAuth.dll</HintPath>
     </Reference>
     <Reference Include="Google.Apis">
-      <HintPath>..\..\..\ViennaAdvantage_MaterialManagement\ViennaAdvantageWeb\ViennaAdvantageWeb\bin\Google.Apis.dll</HintPath>
+      <HintPath>DLL\Google.Apis.dll</HintPath>
     </Reference>
     <Reference Include="Google.Apis.Authentication.OAuth2">
-      <HintPath>..\..\..\ViennaAdvantage_MaterialManagement\ViennaAdvantageWeb\ViennaAdvantageWeb\bin\Google.Apis.Authentication.OAuth2.dll</HintPath>
+      <HintPath>DLL\Google.Apis.Authentication.OAuth2.dll</HintPath>
     </Reference>
     <Reference Include="Google.Apis.Calendar.v3">
-      <HintPath>..\..\..\ViennaAdvantage_MaterialManagement\ViennaAdvantageWeb\ViennaAdvantageWeb\bin\Google.Apis.Calendar.v3.dll</HintPath>
+      <HintPath>DLL\Google.Apis.Calendar.v3.dll</HintPath>
     </Reference>
     <Reference Include="Google.Apis.Tasks.v1">
-      <HintPath>..\..\..\ViennaAdvantage_MaterialManagement\ViennaAdvantageWeb\ViennaAdvantageWeb\bin\Google.Apis.Tasks.v1.dll</HintPath>
+      <HintPath>DLL\Google.Apis.Tasks.v1.dll</HintPath>
     </Reference>
     <Reference Include="Google.GData.Client">
-      <HintPath>..\..\..\ViennaAdvantage_MaterialManagement\ViennaAdvantageWeb\ViennaAdvantageWeb\bin\Google.GData.Client.dll</HintPath>
+      <HintPath>DLL\Google.GData.Client.dll</HintPath>
     </Reference>
     <Reference Include="Google.GData.Contacts">
-      <HintPath>..\..\..\ViennaAdvantage_MaterialManagement\ViennaAdvantageWeb\ViennaAdvantageWeb\bin\Google.GData.Contacts.dll</HintPath>
+      <HintPath>DLL\Google.GData.Contacts.dll</HintPath>
     </Reference>
     <Reference Include="Google.GData.Extensions">
-      <HintPath>..\..\..\ViennaAdvantage_MaterialManagement\ViennaAdvantageWeb\ViennaAdvantageWeb\bin\Google.GData.Extensions.dll</HintPath>
+      <HintPath>DLL\Google.GData.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="Google.GData.YouTube">
-      <HintPath>..\..\..\ViennaAdvantage_MaterialManagement\ViennaAdvantageWeb\ViennaAdvantageWeb\bin\Google.GData.YouTube.dll</HintPath>
+      <HintPath>DLL\Google.GData.YouTube.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.84.0.0, Culture=neutral, PublicKeyToken=1b03e6acf1164f73">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\ViennaAdvantage_MaterialManagement\ViennaAdvantageWeb\ViennaAdvantageWeb\bin\ICSharpCode.SharpZipLib.dll</HintPath>
+      <HintPath>DLL\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="Ionic.Zip">
-      <HintPath>..\..\..\ViennaAdvantage_MaterialManagement\ViennaAdvantageWeb\ViennaAdvantageWeb\bin\Ionic.Zip.dll</HintPath>
-    </Reference>
-    <Reference Include="itextsharp">
-      <HintPath>..\..\..\ViennaAdvantage_MaterialManagement\ViennaAdvantageWeb\ViennaAdvantageWeb\bin\itextsharp.dll</HintPath>
+      <HintPath>DLL\Ionic.Zip.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -100,25 +97,20 @@
     </Reference>
     <Reference Include="MySql.Data, Version=1.0.8.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\HTML5 LatestDlls\MySql.Data.dll</HintPath>
+      <HintPath>DLL\MySql.Data.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.5.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Newtonsoft.Json.Net35">
-      <HintPath>..\..\..\ViennaAdvantage_MaterialManagement\ViennaAdvantageWeb\ViennaAdvantageWeb\bin\Newtonsoft.Json.Net35.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Npgsql, Version=2.2.3.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>DLL\Npgsql.dll</HintPath>
     </Reference>
     <Reference Include="NPOI">
-      <HintPath>..\..\..\ViennaAdvantage_MaterialManagement\ViennaAdvantageWeb\ViennaAdvantageWeb\bin\NPOI.dll</HintPath>
+      <HintPath>DLL\NPOI.dll</HintPath>
     </Reference>
-    <Reference Include="Oracle.ManagedDataAccess, Version=4.121.2.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\Oracle.ManagedDataAccess.dll</HintPath>
+    <Reference Include="Oracle.ManagedDataAccess, Version=4.122.19.1, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
+      <HintPath>..\packages\Oracle.ManagedDataAccess.19.6.0\lib\net40\Oracle.ManagedDataAccess.dll</HintPath>
     </Reference>
     <Reference Include="SecureEngineUtility">
       <HintPath>DLL\SecureEngineUtility.dll</HintPath>

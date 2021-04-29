@@ -67,11 +67,11 @@ namespace ViennaAdvantageServer.Process
 
                 if (_Locator_ID > 0)
                 {
-                    _sql.Append("SELECT AD_CLIENT_ID ,  AD_ORG_ID ,  M_WAREHOUSE_ID ,  M_LOCATOR_ID ,  M_PRODUCT_ID ,  VAPRC_PRODUCTKEY ,  VAPRC_EAN ,  VAPRC_PRODUCTNAME ,  LOT ,  VAPRC_EXPIRYDATE ,  QTYONHAND ,  VAPRC_EXPIRYDAYS ,  M_LOCATORTO_ID ,  VAPRC_ISAPPLYDISCOUNT ,  VAPRC_DISCOUNTPERCENT ,  VAPRC_DISCOUNTAMOUNT ,  M_PRICELIST_VERSION_ID, M_ATTRIBUTESETINSTANCE_ID FROM VAPRC_EXPIRYREPORT_V WHERE QTYONHAND > 0 AND AD_ORG_ID=" + _Org_ID);
+                    _sql.Append("SELECT AD_CLIENT_ID ,  AD_ORG_ID ,  M_WAREHOUSE_ID ,  M_LOCATOR_ID ,  M_PRODUCT_ID ,  VAPRC_PRODUCTKEY ,  VAPRC_EAN ,  VAPRC_PRODUCTNAME ,  LOT ,  VAPRC_EXPIRYDATE ,  QTYONHAND ,  VAPRC_EXPIRYDAYS ,  M_LOCATORTO_ID ,  VAPRC_ISAPPLYDISCOUNT ,  VAPRC_DISCOUNTPERCENT ,  VAPRC_DISCOUNTAMOUNT ,  M_PRICELIST_VERSION_ID, M_ATTRIBUTESETINSTANCE_ID, C_UOM_ID FROM VAPRC_EXPIRYREPORT_V WHERE QTYONHAND > 0 AND AD_ORG_ID=" + _Org_ID);
                 }
                 else
                 {
-                    _sql.Append("SELECT AD_CLIENT_ID ,  AD_ORG_ID ,  M_WAREHOUSE_ID , null AS M_LOCATOR_ID ,  M_PRODUCT_ID ,  VAPRC_PRODUCTKEY ,  VAPRC_EAN ,  VAPRC_PRODUCTNAME ,  LOT ,  VAPRC_EXPIRYDATE ,  SUM(QTYONHAND) AS QTYONHAND ,  VAPRC_EXPIRYDAYS ,  M_LOCATORTO_ID ,  VAPRC_ISAPPLYDISCOUNT ,  VAPRC_DISCOUNTPERCENT ,  VAPRC_DISCOUNTAMOUNT ,  M_PRICELIST_VERSION_ID, M_ATTRIBUTESETINSTANCE_ID FROM VAPRC_EXPIRYREPORT_V WHERE QTYONHAND > 0 AND AD_ORG_ID=" + _Org_ID);
+                    _sql.Append("SELECT AD_CLIENT_ID ,  AD_ORG_ID ,  M_WAREHOUSE_ID , null AS M_LOCATOR_ID ,  M_PRODUCT_ID ,  VAPRC_PRODUCTKEY ,  VAPRC_EAN ,  VAPRC_PRODUCTNAME ,  LOT ,  VAPRC_EXPIRYDATE ,  SUM(QTYONHAND) AS QTYONHAND ,  VAPRC_EXPIRYDAYS ,  M_LOCATORTO_ID ,  VAPRC_ISAPPLYDISCOUNT ,  VAPRC_DISCOUNTPERCENT ,  VAPRC_DISCOUNTAMOUNT ,  M_PRICELIST_VERSION_ID, M_ATTRIBUTESETINSTANCE_ID, C_UOM_ID FROM VAPRC_EXPIRYREPORT_V WHERE QTYONHAND > 0 AND AD_ORG_ID=" + _Org_ID);
                 }
                 _sql.Append(" AND M_WAREHOUSE_ID=" + _Warehouse_ID);
                 _ExpiryDate = _today.Value.AddDays(_ExpiryDays);
@@ -108,7 +108,7 @@ namespace ViennaAdvantageServer.Process
                 }
                 else
                 {
-                    _sql.Append(" GROUP BY ( AD_CLIENT_ID ,  AD_ORG_ID ,  M_WAREHOUSE_ID , M_PRODUCT_ID ,  VAPRC_PRODUCTKEY ,  VAPRC_EAN ,  VAPRC_PRODUCTNAME ,  LOT ,  VAPRC_EXPIRYDATE ,  VAPRC_EXPIRYDAYS ,  M_LOCATORTO_ID ,  VAPRC_ISAPPLYDISCOUNT ,  VAPRC_DISCOUNTPERCENT ,  VAPRC_DISCOUNTAMOUNT ,  M_PRICELIST_VERSION_ID, M_ATTRIBUTESETINSTANCE_ID )");
+                    _sql.Append(" GROUP BY ( AD_CLIENT_ID ,  AD_ORG_ID ,  M_WAREHOUSE_ID , M_PRODUCT_ID ,  VAPRC_PRODUCTKEY ,  VAPRC_EAN ,  VAPRC_PRODUCTNAME ,  LOT ,  VAPRC_EXPIRYDATE ,  VAPRC_EXPIRYDAYS ,  M_LOCATORTO_ID ,  VAPRC_ISAPPLYDISCOUNT ,  VAPRC_DISCOUNTPERCENT ,  VAPRC_DISCOUNTAMOUNT ,  M_PRICELIST_VERSION_ID, M_ATTRIBUTESETINSTANCE_ID, C_UOM_ID)");
                 }
 
                 #region Insert in Temp Table
@@ -405,6 +405,10 @@ namespace ViennaAdvantageServer.Process
                                 _moveLine.SetM_Movement_ID(_movementId);
                                 _moveLine.SetM_Product_ID(Util.GetValueOfInt(_dsProducts.Tables[0].Rows[i]["M_PRODUCT_ID"]));
                                 _moveLine.SetMovementQty(Util.GetValueOfDecimal(_dsProducts.Tables[0].Rows[i]["QTYONHAND"]));
+                                
+                                // Set Qty Entered and UOM
+                                _moveLine.SetQtyEntered(Util.GetValueOfDecimal(_dsProducts.Tables[0].Rows[i]["QTYONHAND"]));
+                                _moveLine.SetC_UOM_ID(Util.GetValueOfInt(_dsProducts.Tables[0].Rows[i]["C_UOM_ID"]));
                                 _moveLine.SetM_AttributeSetInstance_ID(Util.GetValueOfInt(_dsProducts.Tables[0].Rows[i]["M_ATTRIBUTESETINSTANCE_ID"]));
                                 if (_moveLine.Save())
                                 {

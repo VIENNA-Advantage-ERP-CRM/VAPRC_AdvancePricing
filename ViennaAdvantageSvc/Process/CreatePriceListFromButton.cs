@@ -1634,6 +1634,13 @@ namespace ViennaAdvantageServer.Process
                                     }
 
                                 }
+                                else
+                                {
+                                    //if M_DiscountSchemaLine record is not found then it will return this message
+                                    _msg = Msg.GetMsg(ctx, "VAPRC_PlzCheckDisSchemaLine");
+                                    completed = true;
+                                    DB.ExecuteQuery("UPDATE M_PriceList_Version SET Processed='N'  WHERE M_Pricelist_Version_ID= " + _Record_ID);
+                                }
                             }
 
 
@@ -1656,7 +1663,7 @@ namespace ViennaAdvantageServer.Process
                                 + " ppr.M_ATTRIBUTESETINSTANCE_ID FROM M_ProductPrice ppr INNER JOIN M_PriceList_Version bplv ON ppr.M_PriceList_Version_ID=bplv.M_PriceList_Version_ID"
                                 + " INNER JOIN M_PriceList bpl ON bplv.M_PriceList_ID=bpl.M_PriceList_ID WHERE ppr.m_pricelist_version_id = " + _BasePriceList_ID + " ORDER BY ppr.M_product_id, ppr.M_AttributeSetInstance_id ASC) prd) z) pp"
                                 + " ON pp.AD_CLIENT_ID = ppr.AD_CLIENT_ID AND pp.AD_ORG_ID = ppr.AD_ORG_ID AND pp.basecurrency = bpl.C_Currency_ID AND pp.M_PRICELIST_VERSION_ID =ppr.M_PRICELIST_VERSION_ID AND pp.M_PRODUCT_ID = ppr.M_PRODUCT_ID"
-                                + " AND pp.M_ATTRIBUTESETINSTANCE_ID = ppr.M_ATTRIBUTESETINSTANCE_ID WHERE ppr.m_pricelist_version_id = " + _BasePriceList_ID + "ORDER BY row_num ) t LEFT JOIN M_DiscountSchemaLine dl ON dl.M_DiscountSchemaLine_ID = t.DisSchema_ID");
+                                + " AND pp.M_ATTRIBUTESETINSTANCE_ID = ppr.M_ATTRIBUTESETINSTANCE_ID WHERE ppr.m_pricelist_version_id = " + _BasePriceList_ID + " ORDER BY row_num ) t LEFT JOIN M_DiscountSchemaLine dl ON dl.M_DiscountSchemaLine_ID = t.DisSchema_ID");
                             }
                             else
                             {

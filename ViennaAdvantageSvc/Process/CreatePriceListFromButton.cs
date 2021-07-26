@@ -1640,6 +1640,8 @@ namespace ViennaAdvantageServer.Process
                                     _msg = Msg.GetMsg(ctx, "VAPRC_PlzCheckDisSchemaLine");
                                     completed = true;
                                     DB.ExecuteQuery("UPDATE M_PriceList_Version SET Processed='N'  WHERE M_Pricelist_Version_ID= " + _Record_ID);
+                                    //return the Error Message
+                                    return _msg;
                                 }
                             }
 

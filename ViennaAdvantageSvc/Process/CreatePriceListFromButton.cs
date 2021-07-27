@@ -1726,7 +1726,7 @@ namespace ViennaAdvantageServer.Process
                                         {
                                             //if Conversion not found then return a message
                                             _msg = Msg.GetMsg(ctx, "VAPRC_ConversionOrPriceNotFound");
-                                            completed = true;
+                                            completed = false;
                                             DB.ExecuteQuery("UPDATE M_PriceList_Version SET Processed='N'  WHERE M_Pricelist_Version_ID= " + _Record_ID);
                                             //return the Error Message
                                             return _msg;

@@ -1648,11 +1648,13 @@ namespace ViennaAdvantageServer.Process
 
                             if (_CountED011 > 0)
                             {
-                                _Sql.Append(" SELECT t.AD_CLIENT_ID, t.AD_ORG_ID, t.basecurrency, t.C_Currency_ID, t.M_PRICELIST_VERSION_ID, t.M_PRODUCT_ID, t.M_ATTRIBUTESETINSTANCE_ID, t.LOT, t.Vendor,t.C_UOM_ID, t.M_Product_Category_ID ,t.DisSchema_ID,t.M_Brand_ID,"
+                                //to handle the ConversionRate found or not included Price columns and if Conversion not found then value return as zero
+                                _Sql.Append("SELECT t.AD_CLIENT_ID, t.AD_ORG_ID, t.basecurrency, t.C_Currency_ID, t.M_PRICELIST_VERSION_ID, t.M_PRODUCT_ID, t.M_ATTRIBUTESETINSTANCE_ID, t.LOT, t.Vendor,t.C_UOM_ID, t.M_Product_Category_ID ,t.DisSchema_ID,t.M_Brand_ID,"
+                                + " t.PriceList AS base_PriceList, t.PriceStd AS base_PriceStd, t.PriceLimit AS base_PriceLimit,"
                                 + " CASE WHEN NVL(t.DisSchema_ID,0)>0 THEN VAPRC_GetPriceListException(t.M_PRODUCT_ID,NVL( t.Vendor,0),t.M_Product_Category_ID,t.M_Brand_ID,t.DisSchema_ID)"
-                                + " ELSE 0 END AS EXCEPTION, CASE WHEN dl.ConversionDate IS NOT NULL AND dl.C_ConversionType_ID IS NOT NULL THEN COALESCE(currencyConvert(t.PriceLimit,t.basecurrency, t.C_Currency_ID, dl.ConversionDate,dl.C_ConversionType_ID, t.Client_ID, t.Org_ID), t.PriceLimit)"
-                                + " ELSE t.PriceLimit END AS PRICELIMIT, CASE WHEN dl.ConversionDate IS NOT NULL AND dl.C_ConversionType_ID IS NOT NULL THEN COALESCE(currencyConvert(t.PriceList,t.basecurrency, t.C_Currency_ID, dl.ConversionDate,dl.C_ConversionType_ID, t.Client_ID, t.Org_ID), t.PriceList)"
-                                + " ELSE t.PriceList END AS PRICELIST, CASE WHEN dl.ConversionDate IS NOT NULL AND dl.C_ConversionType_ID IS NOT NULL THEN COALESCE(currencyConvert(t.PriceStd,t.basecurrency, t.C_Currency_ID, dl.ConversionDate,dl.C_ConversionType_ID, t.Client_ID, t.Org_ID), t.PriceStd)"
+                                + " ELSE 0 END AS EXCEPTION, CASE WHEN dl.ConversionDate IS NOT NULL AND dl.C_ConversionType_ID IS NOT NULL THEN COALESCE(currencyConvert(t.PriceLimit,t.basecurrency, t.C_Currency_ID, dl.ConversionDate,dl.C_ConversionType_ID, t.Client_ID, t.Org_ID), 0)"
+                                + " ELSE t.PriceLimit END AS PRICELIMIT, CASE WHEN dl.ConversionDate IS NOT NULL AND dl.C_ConversionType_ID IS NOT NULL THEN COALESCE(currencyConvert(t.PriceList,t.basecurrency, t.C_Currency_ID, dl.ConversionDate,dl.C_ConversionType_ID, t.Client_ID, t.Org_ID), 0)"
+                                + " ELSE t.PriceList END AS PRICELIST, CASE WHEN dl.ConversionDate IS NOT NULL AND dl.C_ConversionType_ID IS NOT NULL THEN COALESCE(currencyConvert(t.PriceStd,t.basecurrency, t.C_Currency_ID, dl.ConversionDate,dl.C_ConversionType_ID, t.Client_ID, t.Org_ID), 0)"
                                 + " ELSE t.PriceStd END AS PRICESTD FROM (SELECT ppr.AD_CLIENT_ID, ppr.AD_ORG_ID, plv.AD_Client_ID AS Client_ID, plv.AD_Org_ID AS Org_ID, bpl.C_Currency_ID AS basecurrency, pl.C_Currency_ID, ppr.M_PRICELIST_VERSION_ID, ppr.M_PRODUCT_ID,"
                                 + " ppr.M_ATTRIBUTESETINSTANCE_ID, ppr.LOT, ppr.PriceLimit, ppr.PriceList, ppr.PriceStd, NVL( po.c_bpartner_id,0) AS Vendor, CASE WHEN ppr.C_UOM_ID IS NULL THEN p.C_UOM_ID ELSE ppr.C_UOM_ID END AS C_UOM_ID, p.M_Product_Category_ID,"
                                 + " VAPRC_GetPriceListProduct(ppr.M_PRODUCT_ID,NVL( po.c_bpartner_id,0),p.M_Product_Category_ID,p.M_Brand_ID," + _DiscountSchema_ID + ") AS DisSchema_ID,"
@@ -1669,11 +1671,13 @@ namespace ViennaAdvantageServer.Process
                             }
                             else
                             {
+                                //to handle the ConversionRate found or not included Price column and if Conversion not found then value return as zero
                                 _Sql.Append(" SELECT t.AD_CLIENT_ID, t.AD_ORG_ID, t.basecurrency, t.C_Currency_ID, t.M_PRICELIST_VERSION_ID, t.M_PRODUCT_ID, t.M_ATTRIBUTESETINSTANCE_ID, t.LOT, t.Vendor,t.C_UOM_ID, t.M_Product_Category_ID ,t.DisSchema_ID,t.M_Brand_ID,"
+                                + " t.PriceList AS base_PriceList, t.PriceStd AS base_PriceStd, t.PriceLimit AS base_PriceLimit,"
                                 + " CASE WHEN NVL(t.DisSchema_ID,0)>0 THEN VAPRC_GetPriceListException(t.M_PRODUCT_ID,NVL( t.Vendor,0),t.M_Product_Category_ID,t.M_Brand_ID,t.DisSchema_ID)"
-                                + " ELSE 0 END AS EXCEPTION, CASE WHEN dl.ConversionDate IS NOT NULL AND dl.C_ConversionType_ID IS NOT NULL THEN COALESCE(currencyConvert(t.PriceLimit,t.basecurrency, t.C_Currency_ID, dl.ConversionDate,dl.C_ConversionType_ID, t.Client_ID, t.Org_ID), t.PriceLimit)"
-                                + " ELSE t.PriceLimit END AS PRICELIMIT, CASE WHEN dl.ConversionDate IS NOT NULL AND dl.C_ConversionType_ID IS NOT NULL THEN COALESCE(currencyConvert(t.PriceList,t.basecurrency, t.C_Currency_ID, dl.ConversionDate,dl.C_ConversionType_ID, t.Client_ID, t.Org_ID), t.PriceList)"
-                                + " ELSE t.PriceList END AS PRICELIST, CASE WHEN dl.ConversionDate IS NOT NULL AND dl.C_ConversionType_ID IS NOT NULL THEN COALESCE(currencyConvert(t.PriceStd,t.basecurrency, t.C_Currency_ID, dl.ConversionDate,dl.C_ConversionType_ID, t.Client_ID, t.Org_ID), t.PriceStd)"
+                                + " ELSE 0 END AS EXCEPTION, CASE WHEN dl.ConversionDate IS NOT NULL AND dl.C_ConversionType_ID IS NOT NULL THEN COALESCE(currencyConvert(t.PriceLimit,t.basecurrency, t.C_Currency_ID, dl.ConversionDate,dl.C_ConversionType_ID, t.Client_ID, t.Org_ID), 0)"
+                                + " ELSE t.PriceLimit END AS PRICELIMIT, CASE WHEN dl.ConversionDate IS NOT NULL AND dl.C_ConversionType_ID IS NOT NULL THEN COALESCE(currencyConvert(t.PriceList,t.basecurrency, t.C_Currency_ID, dl.ConversionDate,dl.C_ConversionType_ID, t.Client_ID, t.Org_ID), 0)"
+                                + " ELSE t.PriceList END AS PRICELIST, CASE WHEN dl.ConversionDate IS NOT NULL AND dl.C_ConversionType_ID IS NOT NULL THEN COALESCE(currencyConvert(t.PriceStd,t.basecurrency, t.C_Currency_ID, dl.ConversionDate,dl.C_ConversionType_ID, t.Client_ID, t.Org_ID), 0)"
                                 + " ELSE t.PriceStd END AS PRICESTD FROM (SELECT ppr.AD_CLIENT_ID, ppr.AD_ORG_ID, plv.AD_Client_ID AS Client_ID, plv.AD_Org_ID AS Org_ID, bpl.C_Currency_ID AS basecurrency, pl.C_Currency_ID, ppr.M_PRICELIST_VERSION_ID, ppr.M_PRODUCT_ID,"
                                 + " ppr.M_ATTRIBUTESETINSTANCE_ID, ppr.LOT, ppr.PriceLimit, ppr.PriceList, ppr.PriceStd, NVL( po.c_bpartner_id,0) AS Vendor, p.M_Product_Category_ID,"
                                 + " VAPRC_GetPriceListProduct(ppr.M_PRODUCT_ID,NVL( po.c_bpartner_id,0),p.M_Product_Category_ID,p.M_Brand_ID" + _DiscountSchema_ID + ") AS DisSchema_ID,"
@@ -1715,6 +1719,19 @@ namespace ViennaAdvantageServer.Process
                                     for (int i = 0; i < DsProductsPrice.Tables[0].Rows.Count; i++)
                                     {
                                         Skip = false;
+                                        //check the Conversion found or not, if not can't proceed forward
+                                        if ((Util.GetValueOfDecimal(DsProductsPrice.Tables[0].Rows[i]["PriceList"]) == 0 && Util.GetValueOfDecimal(DsProductsPrice.Tables[0].Rows[i]["base_PriceList"]) != 0) ||
+                                            (Util.GetValueOfDecimal(DsProductsPrice.Tables[0].Rows[i]["PriceStd"]) == 0 && Util.GetValueOfDecimal(DsProductsPrice.Tables[0].Rows[i]["base_PriceStd"]) != 0) ||
+                                            (Util.GetValueOfDecimal(DsProductsPrice.Tables[0].Rows[i]["PriceLimit"]) == 0 && Util.GetValueOfDecimal(DsProductsPrice.Tables[0].Rows[i]["base_PriceLimit"]) != 0))
+                                        {
+                                            //if Conversion not found then return a message
+                                            _msg = Msg.GetMsg(ctx, "VAPRC_ConversionOrPriceNotFound");
+                                            completed = true;
+                                            DB.ExecuteQuery("UPDATE M_PriceList_Version SET Processed='N'  WHERE M_Pricelist_Version_ID= " + _Record_ID);
+                                            //return the Error Message
+                                            return _msg;
+                                        }
+
                                         //To check whthr to skip product insertion or not
                                         if (SkipDelCheck == "S")
                                         {

@@ -176,10 +176,11 @@ namespace ViennaAdvantageServer.Process
                 if (_CountED011 > 0)
                 {
                     _Sql.Append("SELECT ppr.AD_CLIENT_ID,ppr.AD_ORG_ID,ppr.M_PRICELIST_VERSION_ID,ppr.M_PRODUCT_ID,COALESCE(currencyConvert(ppr.PriceLimit,bpl.C_Currency_ID, pl.C_Currency_ID, dl.ConversionDate,"
-                        + " dl.C_ConversionType_ID, plv.AD_Client_ID, plv.AD_Org_ID), -ppr.PriceLimit) as PRICELIMIT,COALESCE(currencyConvert(ppr.PriceList,bpl.C_Currency_ID, pl.C_Currency_ID, dl.ConversionDate,"
-                        + " dl.C_ConversionType_ID, plv.AD_Client_ID, plv.AD_Org_ID), -ppr.PriceList) as PRICELIST,COALESCE(currencyConvert(ppr.PriceStd,bpl.C_Currency_ID, pl.C_Currency_ID, dl.ConversionDate,"
-                        + " dl.C_ConversionType_ID, plv.AD_Client_ID, plv.AD_Org_ID), -ppr.PriceStd) as PRICESTD,ppr.M_ATTRIBUTESETINSTANCE_ID, ppr.LOT,nvl( po.c_bpartner_id,0) as Vendor, case when ppr.C_UOM_ID is null"
-                        + " then p.C_UOM_ID else ppr.C_UOM_ID end as C_UOM_ID FROM M_ProductPrice ppr INNER JOIN M_PriceList_Version plv ON plv.M_PriceList_Version_ID = ppr.M_PriceList_Version_ID"
+                        + " dl.C_ConversionType_ID, plv.AD_Client_ID, plv.AD_Org_ID), 0) as PRICELIMIT,COALESCE(currencyConvert(ppr.PriceList,bpl.C_Currency_ID, pl.C_Currency_ID, dl.ConversionDate,"
+                        + " dl.C_ConversionType_ID, plv.AD_Client_ID, plv.AD_Org_ID), 0) as PRICELIST,COALESCE(currencyConvert(ppr.PriceStd,bpl.C_Currency_ID, pl.C_Currency_ID, dl.ConversionDate,"
+                        + " dl.C_ConversionType_ID, plv.AD_Client_ID, plv.AD_Org_ID), 0) as PRICESTD,ppr.M_ATTRIBUTESETINSTANCE_ID, ppr.LOT,nvl( po.c_bpartner_id,0) as Vendor, case when ppr.C_UOM_ID is null"
+                        + " then p.C_UOM_ID else ppr.C_UOM_ID end as C_UOM_ID,ppr.PriceList AS base_PriceList, ppr.PriceStd AS base_PriceStd, ppr.PriceLimit AS base_PriceLimit"
+                        +" FROM M_ProductPrice ppr INNER JOIN M_PriceList_Version plv ON plv.M_PriceList_Version_ID = ppr.M_PriceList_Version_ID"
                         + " INNER JOIN M_PriceList pl ON pl.M_PriceList_ID = " + _PriceList_ID + " INNER JOIN M_PriceList_Version bplv ON ppr.M_PriceList_Version_ID=bplv.M_PriceList_Version_ID"
                         + " INNER JOIN M_PriceList bpl ON bplv.M_PriceList_ID=bpl.M_PriceList_ID Inner JOIN M_product p ON p.M_product_id = ppr.M_product_id LEFT JOIN M_Product_PO po on (p.M_product_id=po.M_Product_ID "
                         + " and po.ISCURRENTVENDOR='Y') INNER JOIN M_DiscountSchemaLine dl ON dl.M_DiscountSchemaLine_ID=" + _M_DiscountSchemaLine_ID + " WHERE ppr.m_pricelist_version_id=" + _BasePriceList_ID + " ORDER BY M_product_id,  M_AttributeSetInstance_id ASC");
@@ -187,10 +188,11 @@ namespace ViennaAdvantageServer.Process
                 else
                 {
                     _Sql.Append("SELECT ppr.AD_CLIENT_ID,ppr.AD_ORG_ID,ppr.M_PRICELIST_VERSION_ID,ppr.M_PRODUCT_ID,COALESCE(currencyConvert(ppr.PriceLimit,bpl.C_Currency_ID, pl.C_Currency_ID, dl.ConversionDate,"
-                        + " dl.C_ConversionType_ID, plv.AD_Client_ID, plv.AD_Org_ID), -ppr.PriceLimit) as PRICELIMIT,COALESCE(currencyConvert(ppr.PriceList,bpl.C_Currency_ID, pl.C_Currency_ID, dl.ConversionDate,"
-                        + " dl.C_ConversionType_ID, plv.AD_Client_ID, plv.AD_Org_ID), -ppr.PriceList) as PRICELIST,COALESCE(currencyConvert(ppr.PriceStd,bpl.C_Currency_ID, pl.C_Currency_ID, dl.ConversionDate,"
-                        + " dl.C_ConversionType_ID, plv.AD_Client_ID, plv.AD_Org_ID), -ppr.PriceStd) as PRICESTD,ppr.M_ATTRIBUTESETINSTANCE_ID,ppr.LOT,nvl( po.c_bpartner_id,0) as Vendor"
-                        + " FROM M_ProductPrice ppr INNER JOIN M_PriceList_Version plv ON plv.M_PriceList_Version_ID = ppr.M_PriceList_Version_ID"
+                        + " dl.C_ConversionType_ID, plv.AD_Client_ID, plv.AD_Org_ID),0) as PRICELIMIT,COALESCE(currencyConvert(ppr.PriceList,bpl.C_Currency_ID, pl.C_Currency_ID, dl.ConversionDate,"
+                        + " dl.C_ConversionType_ID, plv.AD_Client_ID, plv.AD_Org_ID), 0) as PRICELIST,COALESCE(currencyConvert(ppr.PriceStd,bpl.C_Currency_ID, pl.C_Currency_ID, dl.ConversionDate,"
+                        + " dl.C_ConversionType_ID, plv.AD_Client_ID, plv.AD_Org_ID), 0) as PRICESTD,ppr.M_ATTRIBUTESETINSTANCE_ID,ppr.LOT,nvl( po.c_bpartner_id,0) as Vendor,"
+                        + "ppr.PriceList AS base_PriceList, ppr.PriceStd AS base_PriceStd, ppr.PriceLimit AS base_PriceLimit " 
+                        +" FROM M_ProductPrice ppr INNER JOIN M_PriceList_Version plv ON plv.M_PriceList_Version_ID = ppr.M_PriceList_Version_ID"
                         + " INNER JOIN M_PriceList pl ON pl.M_PriceList_ID = " + _PriceList_ID + " INNER JOIN M_PriceList_Version bplv ON ppr.M_PriceList_Version_ID=bplv.M_PriceList_Version_ID"
                         + " INNER JOIN M_PriceList bpl ON bplv.M_PriceList_ID=bpl.M_PriceList_ID Inner JOIN M_product p ON p.M_product_id = ppr.M_product_id LEFT JOIN M_Product_PO po on (p.M_product_id=po.M_Product_ID "
                         + " and po.ISCURRENTVENDOR='Y') INNER JOIN M_DiscountSchemaLine dl ON dl.M_DiscountSchemaLine_ID=" + _M_DiscountSchemaLine_ID + " WHERE ppr.m_pricelist_version_id=" + _BasePriceList_ID + " ORDER BY M_product_id,  M_AttributeSetInstance_id ASC");
@@ -205,7 +207,7 @@ namespace ViennaAdvantageServer.Process
                 if (DsProductsPrice != null)
                 {
                     if (DsProductsPrice.Tables[0].Rows.Count > 0)
-                    {
+                    {                       
                         MPriceListVersion PriceListVersion = new MPriceListVersion(GetCtx(), 0, null);
                         PriceListVersion.SetAD_Org_ID(AD_Org_ID);
                         PriceListVersion.SetName(Util.GetValueOfString(System.DateTime.Now));
@@ -216,6 +218,15 @@ namespace ViennaAdvantageServer.Process
                         {
                             for (int i = 0; i < DsProductsPrice.Tables[0].Rows.Count; i++)
                             {
+                                //check the Conversion found or not, if not can't proceed forward
+                                if ((Util.GetValueOfDecimal(DsProductsPrice.Tables[0].Rows[i]["PriceList"]) == 0 && Util.GetValueOfDecimal(DsProductsPrice.Tables[0].Rows[i]["base_PriceList"]) != 0) ||
+                                    (Util.GetValueOfDecimal(DsProductsPrice.Tables[0].Rows[i]["PriceStd"]) == 0 && Util.GetValueOfDecimal(DsProductsPrice.Tables[0].Rows[i]["base_PriceStd"]) != 0) ||
+                                    (Util.GetValueOfDecimal(DsProductsPrice.Tables[0].Rows[i]["PriceLimit"]) == 0 && Util.GetValueOfDecimal(DsProductsPrice.Tables[0].Rows[i]["base_PriceLimit"]) != 0))
+                                {
+                                    //if Conversion not found then return a message
+                                      return  Msg.GetMsg(GetCtx(), "VAPRC_ConversionOrPriceNotFound");
+
+                                }
                                 int C_UOM_ID = 0;
                                 if (_CountED011 > 0)
                                 {

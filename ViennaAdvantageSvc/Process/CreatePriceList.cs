@@ -769,6 +769,12 @@ namespace ViennaAdvantageServer.Process
                             return Msg.GetMsg(GetCtx(), "VAPRC_PriceListVersionNotSaved");
                         }
                     }
+                    else
+                    {
+                        //if no record found on ProductPrice against base Price List
+                        //or on DiscountScmehaLine of Selected Discount Schema 
+                        return Msg.GetMsg(GetCtx(),"VAPRC_DataNotFound");
+                    }
                 }
             }
             catch (Exception)

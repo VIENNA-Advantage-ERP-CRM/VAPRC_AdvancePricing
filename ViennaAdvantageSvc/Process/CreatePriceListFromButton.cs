@@ -857,6 +857,7 @@ namespace ViennaAdvantageServer.Process
                 MPriceListVersion plv_ = new MPriceListVersion(GetCtx(), _Record_ID, Get_TrxName());
                 String SkipDel = Util.GetValueOfString(plv_.Get_Value("VAPRC_PLUpdSkip"));
                 VAPRC_CreatePriceList CreatePriceList = new VAPRC_CreatePriceList(GetCtx(), Get_TrxName());
+                #region Commented Code
                 //Thread thread = new Thread(new ThreadStart(() => CreatePriceList.CreatePricelist(_Record_ID, SkipDel, GetCtx(), Get_TrxName())));
                 //thread.Start();
 
@@ -877,6 +878,7 @@ namespace ViennaAdvantageServer.Process
                 //    System.Threading.Thread.Sleep(10);
                 //}
                 //Below is for debugging
+                #endregion
                 _msg = CreatePriceList.CreatePricelist(_Record_ID, SkipDel, Env.GetCtx(), Get_TrxName());
                 return _msg;
                 #endregion
@@ -1327,6 +1329,14 @@ namespace ViennaAdvantageServer.Process
 
         #endregion
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="_Record_ID"></param>
+        /// <param name="SkipDel"></param>
+        /// <param name="ctx"></param>
+        /// <param name="trx"></param>
+        /// <returns></returns>
         public String CreatePricelist(int _Record_ID, string SkipDel, Ctx ctx, Trx trx)
         {
             ctx = this.ctx;
@@ -1336,8 +1346,8 @@ namespace ViennaAdvantageServer.Process
                 String SkipDelCheck = SkipDel;
                
 
-                _CountED011 = Util.GetValueOfInt(DB.ExecuteScalar("SELECT COUNT(AD_MODULEINFO_ID) FROM AD_MODULEINFO WHERE PREFIX='ED011_'"));
-                _countFormula = Util.GetValueOfInt(DB.ExecuteScalar("SELECT Count(*) FROM AD_Column WHERE ColumnName = 'IsListFormula' AND AD_Table_ID = 477"));
+                _CountED011 = Util.GetValueOfInt(DB.ExecuteScalar("SELECT COUNT(AD_MODULEINFO_ID) FROM AD_MODULEINFO WHERE PREFIX='ED011_'", null, trx));
+                _countFormula = Util.GetValueOfInt(DB.ExecuteScalar("SELECT Count(*) FROM AD_Column WHERE ColumnName = 'IsListFormula' AND AD_Table_ID = 477", null, trx));
 
                 // To get price list from price list version
                 #region Get ALL DISCOUNT SCHEMA from Price List Version
@@ -1345,7 +1355,7 @@ namespace ViennaAdvantageServer.Process
                 if (plVersion != null)
                 {
                     GetVersionProducts(_Record_ID); //To get All Products information from Product price
-                    DB.ExecuteQuery("UPDATE M_PriceList_Version SET Processed='Y' WHERE IsActive='Y' AND M_Pricelist_Version_ID= " + _Record_ID);
+                    DB.ExecuteQuery("UPDATE M_PriceList_Version SET Processed='Y' WHERE IsActive='Y' AND M_Pricelist_Version_ID= " + _Record_ID, null, trx);
 
                     AD_Client_ID = plVersion.GetAD_Client_ID();
                     MDiscountSchema dSchema = null;
@@ -1507,7 +1517,7 @@ namespace ViennaAdvantageServer.Process
                             _Sql.Append("SELECT pl.priceprecision,pl.m_pricelist_id FROM m_pricelist pl INNER JOIN m_pricelist_version pv ON(pl.m_pricelist_id= pv.m_pricelist_id)"
                             + "where pv.m_pricelist_version_id=" + _BasePriceList_ID);
                             DataSet ds = new DataSet();
-                            ds = DB.ExecuteDataset(_Sql.ToString());
+                            ds = DB.ExecuteDataset(_Sql.ToString(), null, trx);
                             _Sql.Clear();
                             if (ds.Tables[0].Rows.Count > 0)
                             {
@@ -1533,7 +1543,7 @@ namespace ViennaAdvantageServer.Process
                                     + " dsl.limit_rounding, dsl.vaprc_pricesprevlot ,M_DiscountSchemaline_ID,dsl.c_bpartner_id,dsl.M_Brand_ID,dsl.VAPRC_SumLevelProd"
                                     + " FROM m_discountschema dsh INNER JOIN m_discountschemaline dsl ON (dsh.m_discountschema_id = dsl.m_discountschema_id) WHERE dsl.isActive='Y' AND dsh.m_discountschema_id=" + _DiscountSchema_ID);
                             }
-                            DsMainRecords = DB.ExecuteDataset(_Sql.ToString());
+                            DsMainRecords = DB.ExecuteDataset(_Sql.ToString(), null, trx);
                             _Sql.Clear();
                             //Get Values From discountschemaline where product_id,vendor_id,brand_ID,Collection_ID and Productcategory_id are null
                             if (DsMainRecords != null)
@@ -1573,7 +1583,7 @@ namespace ViennaAdvantageServer.Process
                                     _Sql.Append("SELECT plv.ad_org_id,org.issummary FROM m_pricelist_version plv INNER JOIN ad_org org ON (plv.ad_org_id= org.ad_org_id)"
                                           + "WHERE plv.m_pricelist_version_id=" + _BasePriceList_ID);
 
-                                    DsOrgInfo = DB.ExecuteDataset(_Sql.ToString());
+                                    DsOrgInfo = DB.ExecuteDataset(_Sql.ToString(), null, trx);
                                     _Sql.Clear();
                                     if (DsOrgInfo.Tables[0].Rows.Count > 0)
                                     {
@@ -1639,7 +1649,7 @@ namespace ViennaAdvantageServer.Process
                                     //if M_DiscountSchemaLine record is not found then it will return this message
                                     _msg = Msg.GetMsg(ctx, "VAPRC_PlzCheckDisSchemaLine");
                                     completed = true;
-                                    DB.ExecuteQuery("UPDATE M_PriceList_Version SET Processed='N'  WHERE M_Pricelist_Version_ID= " + _Record_ID);
+                                    DB.ExecuteQuery("UPDATE M_PriceList_Version SET Processed='N'  WHERE M_Pricelist_Version_ID= " + _Record_ID, null, trx);
                                     //return the Error Message
                                     return _msg;
                                 }
@@ -1693,7 +1703,7 @@ namespace ViennaAdvantageServer.Process
                                 + " AND pp.M_ATTRIBUTESETINSTANCE_ID = ppr.M_ATTRIBUTESETINSTANCE_ID WHERE ppr.m_pricelist_version_id = " + _BasePriceList_ID + "ORDER BY row_num ) t LEFT JOIN M_DiscountSchemaLine dl ON dl.M_DiscountSchemaLine_ID = t.DisSchema_ID");
                             }
 
-                            DsProductsPrice = DB.ExecuteDataset(_Sql.ToString());
+                            DsProductsPrice = DB.ExecuteDataset(_Sql.ToString(), null, trx);
                             _Sql.Clear();
 
                             // Checking Discount schemaline for every product and productcategory
@@ -1712,7 +1722,7 @@ namespace ViennaAdvantageServer.Process
                                     }
                                     catch (Exception e)
                                     {
-                                        DB.ExecuteQuery("UPDATE M_PriceList_Version SET Processed='N'  WHERE M_Pricelist_Version_ID= " + _Record_ID);
+                                        DB.ExecuteQuery("UPDATE M_PriceList_Version SET Processed='N'  WHERE M_Pricelist_Version_ID= " + _Record_ID, null, trx);
                                         return e.Message;
                                     }
 
@@ -1727,7 +1737,7 @@ namespace ViennaAdvantageServer.Process
                                             //if Conversion not found then return a message
                                             _msg = Msg.GetMsg(ctx, "VAPRC_ConversionOrPriceNotFound");
                                             completed = false;
-                                            DB.ExecuteQuery("UPDATE M_PriceList_Version SET Processed='N'  WHERE M_Pricelist_Version_ID= " + _Record_ID);
+                                            DB.ExecuteQuery("UPDATE M_PriceList_Version SET Processed='N'  WHERE M_Pricelist_Version_ID= " + _Record_ID, null, trx);
                                             //return the Error Message
                                             return _msg;
                                         }
@@ -1873,6 +1883,11 @@ namespace ViennaAdvantageServer.Process
                                                                 {
                                                                     IsExceptionFound = false;
                                                                     // FlagNotSaved = true;
+                                                                    if (string.IsNullOrEmpty(_msg))
+                                                                    {
+                                                                        _msg = Msg.GetMsg(ctx, "VAPRC_LineNotSaved");
+                                                                    }
+                                                                    return _msg;
                                                                 }
                                                             }
                                                             else
@@ -1940,6 +1955,11 @@ namespace ViennaAdvantageServer.Process
                                                                 {
                                                                     IsExceptionFound = false;
                                                                     //FlagNotSaved = true;
+                                                                    if (string.IsNullOrEmpty(_msg))
+                                                                    {
+                                                                        _msg = Msg.GetMsg(ctx, "VAPRC_LineNotSaved");
+                                                                    }
+                                                                    return _msg;
                                                                 }
                                                             }
                                                         }
@@ -1948,7 +1968,7 @@ namespace ViennaAdvantageServer.Process
                                                     else if (DiscSchema > 0 && Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["DisSchema_ID"]) == 0)
                                                     {
 
-                                                        _discountSchemaLine = new MDiscountSchemaLine(ctx, DiscSchema, null);
+                                                        _discountSchemaLine = new MDiscountSchemaLine(ctx, DiscSchema, trx);
 
                                                         PriceArray[0] = Util.GetValueOfDecimal(DsProductsPrice.Tables[0].Rows[i]["PRICELIST"]);
                                                         PriceArray[1] = Util.GetValueOfDecimal(DsProductsPrice.Tables[0].Rows[i]["PRICESTD"]);
@@ -2025,7 +2045,10 @@ namespace ViennaAdvantageServer.Process
                                                                 }
                                                                 else
                                                                 {
-                                                                    _msg = Msg.GetMsg(ctx, "VAPRC_LineNotSaved");
+                                                                    if (string.IsNullOrEmpty(_msg))
+                                                                    {
+                                                                        _msg = Msg.GetMsg(ctx, "VAPRC_LineNotSaved");
+                                                                    }
                                                                     //FlagNotSaved = true;
                                                                     return _msg;
                                                                 }
@@ -2095,7 +2118,10 @@ namespace ViennaAdvantageServer.Process
                                                                 }
                                                                 else
                                                                 {
-                                                                    _msg = Msg.GetMsg(ctx, "VAPRC_LineNotSaved");
+                                                                    if (string.IsNullOrEmpty(_msg))
+                                                                    {
+                                                                        _msg = Msg.GetMsg(ctx, "VAPRC_LineNotSaved");
+                                                                    }
                                                                     //FlagNotSaved = true;
                                                                     return _msg;
                                                                 }
@@ -2109,7 +2135,7 @@ namespace ViennaAdvantageServer.Process
 
                                                         if (_M_DiscountSchemaLine_ID > 0)
                                                         {
-                                                            _discountSchemaLine = new MDiscountSchemaLine(ctx, _M_DiscountSchemaLine_ID, null);
+                                                            _discountSchemaLine = new MDiscountSchemaLine(ctx, _M_DiscountSchemaLine_ID, trx);
                                                             PriceArray[0] = Util.GetValueOfDecimal(DsProductsPrice.Tables[0].Rows[i]["PRICELIST"]);
                                                             PriceArray[1] = Util.GetValueOfDecimal(DsProductsPrice.Tables[0].Rows[i]["PRICESTD"]);
                                                             PriceArray[2] = Util.GetValueOfDecimal(DsProductsPrice.Tables[0].Rows[i]["PRICELIMIT"]);
@@ -2178,7 +2204,10 @@ namespace ViennaAdvantageServer.Process
                                                             }
                                                             else
                                                             {
-                                                                _msg = Msg.GetMsg(ctx, "VAPRC_LineNotSaved");
+                                                                if (string.IsNullOrEmpty(_msg))
+                                                                {
+                                                                    _msg = Msg.GetMsg(ctx, "VAPRC_LineNotSaved");
+                                                                }
                                                                 // FlagNotSaved = true;
                                                                 return _msg;
                                                             }
@@ -2191,7 +2220,7 @@ namespace ViennaAdvantageServer.Process
                                                 _msg = e.Message.ToString();
                                                 completed = false;
                                                 //Update status of version tab
-                                                DB.ExecuteQuery("UPDATE M_PriceList_Version SET Processed='N'  WHERE M_Pricelist_Version_ID= " + _Record_ID);
+                                                DB.ExecuteQuery("UPDATE M_PriceList_Version SET Processed='N'  WHERE M_Pricelist_Version_ID= " + _Record_ID, null, trx);
                                                 if (Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["DisSchema_ID"]) > 0)
                                                 {
                                                     _msg = Msg.GetMsg(ctx, "VAPRC_LineNotSaved");
@@ -2220,6 +2249,11 @@ namespace ViennaAdvantageServer.Process
                                         }
                                     }
                                 }
+                                else
+                                {
+                                    //check if Base Price List has Product Price to create or update the Product Cost
+                                    return Msg.GetMsg(ctx, "VAPRC_DataNotFound");
+                                }
                             }
                         }
                     }
@@ -2228,13 +2262,13 @@ namespace ViennaAdvantageServer.Process
                         completed = true;
                         _msg = Msg.GetMsg(Env.GetCtx(), "VAPRC_PriceListCreatedSuccess");
                         //Update status of version tab
-                        DB.ExecuteQuery("UPDATE M_PriceList_Version SET Processed='N'  WHERE M_Pricelist_Version_ID= " + _Record_ID);
+                        DB.ExecuteQuery("UPDATE M_PriceList_Version SET Processed='N'  WHERE M_Pricelist_Version_ID= " + _Record_ID, null, trx);
                     }
                     else
                     {
                         _msg = Msg.GetMsg(ctx, "VAPRC_LineNotSaved");
                         completed = true;
-                        DB.ExecuteQuery("UPDATE M_PriceList_Version SET Processed='N'  WHERE M_Pricelist_Version_ID= " + _Record_ID);
+                        DB.ExecuteQuery("UPDATE M_PriceList_Version SET Processed='N'  WHERE M_Pricelist_Version_ID= " + _Record_ID, null, trx);
                     }
                 }
                 //_msg = Msg.GetMsg(Env.GetCtx(), "VAPRC_PriceListCreatedSuccess");
@@ -2247,6 +2281,10 @@ namespace ViennaAdvantageServer.Process
             }
             return _msg;
         }
+
+        /// <summary>
+        /// Get the Exception details if record found on Discount Schema window
+        /// </summary>
         private void GetExceptionData()
         {
             try
@@ -2280,7 +2318,11 @@ namespace ViennaAdvantageServer.Process
             }
             return _dsVersionRecords;
         }
-        // Method to get all the products from summary level from discount schema line
+
+        /// <summary>
+        /// Method to get all the products from summary level from discount schema line
+        /// </summary>
+        /// <param name="ctx">Context</param>
         private void CreateTreeArraySchema(Ctx ctx)
         {
             try
@@ -2372,7 +2414,11 @@ namespace ViennaAdvantageServer.Process
             }
 
         }
-        // Method to get all the products from summary level in exception tab
+        
+        /// <summary>
+        /// Method to get all the products from summary level in exception tab
+        /// </summary>
+        /// <param name="ctx">Context</param>
         private void CreateTreeArrayException(Ctx ctx)
         {
             try
@@ -2457,7 +2503,10 @@ namespace ViennaAdvantageServer.Process
                 _msg = e.Message;
             }
         }
-        // New Methods to handle summary level along with other parameters
+        
+        /// <summary>
+        /// New Methods to handle summary level along with other parameters
+        /// </summary>
         private void SummLevelDiscSchema()
         {
             try
@@ -2487,7 +2536,11 @@ namespace ViennaAdvantageServer.Process
                 _msg = e.Message;
             }
         }
-        // Method to get all the products from summary level in exception tab where only seummary level is bind
+
+        /// <summary>
+        /// Method to get all the products from summary level in exception tab where only seummary level is bind
+        /// </summary>
+        /// <param name="ctx">Context</param>
         private void CreateTreeArrayExceptionSumLevel(Ctx ctx)
         {
             try
@@ -2570,7 +2623,14 @@ namespace ViennaAdvantageServer.Process
                 _msg = e.Message;
             }
         }
-        //Check if records needed to be skipped or inserted
+
+        /// <summary>
+        /// Check if records needed to be skipped or inserted
+        /// </summary>
+        /// <param name="M_Product_ID">Product ID</param>
+        /// <param name="M_AttributeSetInstance_ID">Attribute Instance ID</param>
+        /// <param name="C_Uom_ID">C_UOM_ID</param>
+        /// <returns>returns status true or false</returns>
         private bool CheckSkipStatus(int M_Product_ID, int M_AttributeSetInstance_ID, int C_Uom_ID)
         {
             bool status = false;
@@ -2590,7 +2650,15 @@ namespace ViennaAdvantageServer.Process
             }
             return status;
         }
-        //check product for discount schema
+
+        /// <summary>
+        /// check product for discount schema
+        /// </summary>
+        /// <param name="M_Product_ID">M_Product_ID</param>
+        /// <param name="DiscSchema_ID">M_DiscountSchema_ID</param>
+        /// <param name="Exception_ID">VAPRC_Exception_ID</param>
+        /// <param name="Record_ID">M_Pricelist_Version_ID</param>
+        /// <returns>returns M_DiscountSchema_ID</returns>
         private int CheckProductDiscSchema(int M_Product_ID, int DiscSchema_ID, int Exception_ID, int Record_ID)
         {
             int DiscountSchema_ID = 0;
@@ -2664,7 +2732,14 @@ namespace ViennaAdvantageServer.Process
             }
             return DiscountSchema_ID;
         }
-        //Delete Exsting records from product Price
+
+        /// <summary>
+        /// Delete Exsting records from product Price
+        /// </summary>
+        /// <param name="_Product_ID">M_Product_ID</param>
+        /// <param name="_AttributeSetInstance_ID">M_AttributeSetInstance_ID</param>
+        /// <param name="PLVersion_ID">M_PriceList_Version_ID</param>
+        /// <param name="C_Uom_ID">C_Uom_ID</param>
         private void DeleteExisting(int _Product_ID, int _AttributeSetInstance_ID, int PLVersion_ID, int C_Uom_ID)
         {
             try
@@ -2676,7 +2751,7 @@ namespace ViennaAdvantageServer.Process
                 {
                     Sql += " AND C_Uom_ID=" + C_Uom_ID + "";
                 }
-                if (Util.GetValueOfInt(DB.ExecuteScalar(Sql, null, null)) > 0)
+                if (Util.GetValueOfInt(DB.ExecuteScalar(Sql, null, trx)) > 0)
                 {
                     Sql = "";
                     Sql = @" DELETE FROM M_Productprice WHERE IsActive ='Y' AND M_Product_ID =" + _Product_ID + " AND M_ATTRIBUTESETINSTANCE_ID=" + _AttributeSetInstance_ID + " AND "
@@ -2685,7 +2760,7 @@ namespace ViennaAdvantageServer.Process
                     {
                         Sql += " AND C_Uom_ID=" + C_Uom_ID + "";
                     }
-                    int a = DB.ExecuteQuery(Sql, null, null);
+                    int a = DB.ExecuteQuery(Sql, null, trx);
                     Sql = null;
                 }
             }
@@ -2798,6 +2873,46 @@ namespace ViennaAdvantageServer.Process
             return result;
         }
 
+        /// <summary>
+        /// Save the Product Price record on Product Price Tab on Price List Window
+        /// based on given Input Values
+        /// </summary>
+        /// <param name="AD_Org_ID">AD_Org_ID</param>
+        /// <param name="Product_ID">M_Product_ID</param>
+        /// <param name="Record_ID">M_PriceList_Version_ID</param>
+        /// <param name="C_Uom_ID">C_Uom_ID</param>
+        /// <param name="AttributeSetInstance_ID">M_AttributeSetInstance_ID</param>
+        /// <param name="Lot">Lot Number</param>
+        /// <param name="_ListBaseVal">List Base Value</param>
+        /// <param name="_StdBaseVal">Standard base Value</param>
+        /// <param name="_LimitBaseVal">Limit Base Value</param>
+        /// <param name="_ListFixed">Fixed List Price</param>
+        /// <param name="_StdFixed">Fixed Standard Price</param>
+        /// <param name="_LimitFixed">Dixed Limit Price</param>
+        /// <param name="_listAddAmt">Add Amt to List Price</param>
+        /// <param name="_StdAddAmt">Add Amt to Standard Price</param>
+        /// <param name="_LimitAddAmt">Add Amt to Limit Price</param>
+        /// <param name="_ListDiscount">List Price Discount</param>
+        /// <param name="_StdDiscount">Standard Price Discount</param>
+        /// <param name="_LimitDiscount">Limit Price Discount</param>
+        /// <param name="_ListRounding">List Price Rounding</param>
+        /// <param name="_StdRounding">Standard Price Rounding</param>
+        /// <param name="_LimitRounding">Limit Price Rounding</param>
+        /// <param name="Precision">Currency Precision</param>
+        /// <param name="PriceList">List Price</param>
+        /// <param name="PriceStd">Standard Price</param>
+        /// <param name="PriceLimit">Limit Price</param>
+        /// <param name="_IsListFormula">_Is List Formula</param>
+        /// <param name="_IsStdFormula">_Is Standard Formula</param>
+        /// <param name="_IsLimitFormula">_Is Limit Formula</param>
+        /// <param name="_ListFormula">List Formula</param>
+        /// <param name="_StdFormula">Standard Formula</param>
+        /// <param name="_LimitFormula">Limit Formula</param>
+        /// <param name="ctx">Context</param>
+        /// <param name="M_Brand_ID">M_Brand_ID</param>
+        /// <param name="M_Product_Category_ID">M_Product_Category_ID</param>
+        /// <param name="exceptionFound">Exception found or not</param>
+        /// <returns>returns boolean value (Indicates record saved or not)</returns>
         public bool SaveProdPrice(int AD_Org_ID, int Product_ID, int Record_ID, int C_Uom_ID, int AttributeSetInstance_ID, string Lot, string _ListBaseVal, string _StdBaseVal, string _LimitBaseVal,
            decimal _ListFixed, decimal _StdFixed, decimal _LimitFixed, decimal _listAddAmt, decimal _StdAddAmt, decimal _LimitAddAmt, decimal _ListDiscount, decimal _StdDiscount,
            decimal _LimitDiscount, string _ListRounding, string _StdRounding, string _LimitRounding, int Precision, decimal PriceList, decimal PriceStd, decimal PriceLimit,
@@ -2809,7 +2924,7 @@ namespace ViennaAdvantageServer.Process
                 PriceListAmt = 0;
                 PriceStdAmt = 0;
                 PriceLimitAmt = 0;
-                MPriceListVersion _plv = new MPriceListVersion(ctx, Record_ID, null);
+                MPriceListVersion _plv = new MPriceListVersion(ctx, Record_ID, trx);
                 if (_IsListFormula == "Y")
                 {
                     PriceListAmt = Calculate(_ListBaseVal, PriceList, PriceStd, PriceLimit, _ListFixed, _ListFormula, _listAddAmt, _ListRounding, _Precision, exceptionFound);
@@ -2852,7 +2967,7 @@ namespace ViennaAdvantageServer.Process
                 int _Plpresecion = 0;
                 if (_plv != null && _plv.GetM_PriceList_ID() > 0)
                 {
-                    MPriceList pl = new MPriceList(ctx, _plv.GetM_PriceList_ID(), null);
+                    MPriceList pl = new MPriceList(ctx, _plv.GetM_PriceList_ID(), trx);
                     _Plpresecion = pl.GetPricePrecision();
                 }
 
@@ -2877,6 +2992,20 @@ namespace ViennaAdvantageServer.Process
                 {
                     exceptionFound = false;
                     return true;
+                }
+                else 
+                {
+                    //get the Error
+                    ValueNamePair vnp = VLogger.RetrieveError();
+                    //some times getting the error pp also
+                    //Check first GetName() then GetValue() to get proper Error Message
+                    string error = vnp != null ? vnp.ToString() ?? vnp.GetName() : "";
+                    if (string.IsNullOrEmpty(error))
+                    {
+                        error = vnp != null ? vnp.GetValue() : "";
+                    }
+                    _msg = !string.IsNullOrEmpty(error) ? error : Msg.GetMsg(ctx, "VAPRC_ProdttPriceNotSaved");
+                    _log.Severe(_msg);
                 }
                 #endregion
             }
@@ -2986,7 +3115,20 @@ namespace ViennaAdvantageServer.Process
             return calc.Value;
         }
 
-        // Calculate Method Formula Based
+        /// <summary>
+        /// Calculate Method Formula Based
+        /// </summary>
+        /// <param name="base1">Price Base</param>
+        /// <param name="list">List Price</param>
+        /// <param name="std">Standard  Price</param>
+        /// <param name="limit">Limit Price</param>
+        /// <param name="fix">Fixed Price</param>
+        /// <param name="formula">Price Discount Formula</param>
+        /// <param name="add">Add Amt to Price</param>
+        /// <param name="round">Price Rounding</param>
+        /// <param name="curPrecision">Currency Precision</param>
+        /// <param name="exceptionFound">Exception Found true or false</param>
+        /// <returns>returns Price</returns>
         private Decimal Calculate(String base1,
          Decimal list, Decimal std, Decimal limit, Decimal fix, string formula,
          Decimal add, String round, int curPrecision, bool exceptionFound)
@@ -3141,7 +3283,17 @@ namespace ViennaAdvantageServer.Process
             return calc.Value;
         }
 
-        //Calculate currency conversion for the Product
+        /// <summary>
+        /// Calculate currency conversion for the Product
+        /// </summary>
+        /// <param name="ctx">Context</param>
+        /// <param name="price">Price</param>
+        /// <param name="discoutSchemaLine">MDiscountSchemaLine</param>
+        /// <param name="CurrencyFrom">Currency From</param>
+        /// <param name="CurrencyTo">Currency To</param>
+        /// <param name="Ad_Client_ID">AD_Client_ID</param>
+        /// <param name="Ad_Org_ID">AD_Org_ID</param>
+        /// <returns>returns Converted Prices for a Product</returns>
         private decimal[] CurrencyConvert(Ctx ctx, decimal[] price, MDiscountSchemaLine discoutSchemaLine, int CurrencyFrom, int CurrencyTo, int Ad_Client_ID, int Ad_Org_ID)
         {
             decimal[] convertedPrice = new decimal[3];
@@ -3168,7 +3320,17 @@ namespace ViennaAdvantageServer.Process
             return convertedPrice;
         }
 
-        //If attribute is there for the previos Lot then Create New price List
+        /// <summary>
+        /// If attribute is there for the previos Lot then Create New price List
+        /// </summary>
+        /// <param name="Product_id">M_Product_ID</param>
+        /// <param name="PriceList">List Price</param>
+        /// <param name="PriceStd">Standard Price</param>
+        /// <param name="PriceLimit">Limit Price</param>
+        /// <param name="PriceListVersion_ID">M_PriceList_Version_ID</param>
+        /// <param name="DsPPrice">DataSet for Product Price</param>
+        /// <param name="UOM_ID">C_UOM_ID</param>
+        /// <param name="ctx">Context</param>
         public void KeepPricesForPreviousLots(int Product_id, decimal PriceList, decimal PriceStd, decimal PriceLimit, int PriceListVersion_ID, DataSet DsPPrice, int UOM_ID, Ctx ctx)
         {
             DataSet DsLotBased = new DataSet();

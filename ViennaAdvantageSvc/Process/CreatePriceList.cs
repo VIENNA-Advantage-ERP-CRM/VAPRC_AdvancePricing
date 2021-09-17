@@ -16,6 +16,7 @@ using VAdvantage.Utility;
 using VAdvantage.DataBase;
 using System.Data;
 using VAdvantage.Classes;
+using VAdvantage.Logging;
 
 namespace ViennaAdvantageServer.Process
 {
@@ -41,8 +42,8 @@ namespace ViennaAdvantageServer.Process
         {
             try
             {
-                _CountED011 = Util.GetValueOfInt(DB.ExecuteScalar("SELECT COUNT(AD_MODULEINFO_ID) FROM AD_MODULEINFO WHERE PREFIX='ED011_'"));
-                _countFormula = Util.GetValueOfInt(DB.ExecuteScalar("SELECT Count(*) FROM AD_Column WHERE ColumnName = 'IsListFormula' AND AD_Table_ID = 477"));
+                _CountED011 = Util.GetValueOfInt(DB.ExecuteScalar("SELECT COUNT(AD_MODULEINFO_ID) FROM AD_MODULEINFO WHERE PREFIX='ED011_'", null, Get_TrxName()));
+                _countFormula = Util.GetValueOfInt(DB.ExecuteScalar("SELECT Count(*) FROM AD_Column WHERE ColumnName = 'IsListFormula' AND AD_Table_ID = 477", null, Get_TrxName()));
                 // To get price list from price list version
                 // To Get Precision value fromk price list
 
@@ -74,10 +75,11 @@ namespace ViennaAdvantageServer.Process
                         + " dsl.limit_rounding,dsl.vaprc_pricesprevlot,M_DiscountSchemaline_ID,dsl.c_bpartner_id FROM m_discountschema dsh INNER JOIN m_discountschemaline dsl"
                         + " ON (dsh.m_discountschema_id= dsl.m_discountschema_id) WHERE dsh.m_discountschema_id=" + _DiscountSchema_ID);
                 }
-                DsMainRecords = DB.ExecuteDataset(_Sql.ToString());
+                DsMainRecords = DB.ExecuteDataset(_Sql.ToString(), null, Get_TrxName());
                 //Get Values From discountschemaline where product_id and Productcategory_id are null
                 if (DsMainRecords.Tables[0].Rows.Count > 0)
                 {
+                    //filter the data Row and sort by(Order By) M_DiscountSchemaline_ID
                     DataRow[] DRMaximumIddsl = DsMainRecords.Tables[0].Select("M_Product_Category_ID is null AND M_Product_ID is null AND C_BPartner_ID is null ", " M_DiscountSchemaline_ID DESC");
                     if (DRMaximumIddsl.Length > 0)
                     {
@@ -107,6 +109,11 @@ namespace ViennaAdvantageServer.Process
                             _StdFormula = Util.GetValueOfString(DRMaximumIddsl[0].ItemArray[24]);
                             _LimitFormula = Util.GetValueOfString(DRMaximumIddsl[0].ItemArray[25]);
                         }
+                    }
+                    else 
+                    {
+                        //Product Category, Product and Business Partner fields must be null on DiscountSchema Line to create Price List
+                        return Msg.GetMsg(GetCtx(), "VAPRC_PdtCatPdtBPMustbeNull");
                     }
                     _Sql.Clear();
                     _Sql.Append("SELECT plv.ad_org_id,org.issummary FROM m_pricelist_version plv INNER JOIN ad_org org ON (plv.ad_org_id= org.ad_org_id)"
@@ -168,6 +175,12 @@ namespace ViennaAdvantageServer.Process
                     }
 
                 }
+                else
+                {
+                    //if M_DiscountSchemaLine record is not found then it will return this message
+                    return Msg.GetMsg(GetCtx(), "VAPRC_PlzCheckDisSchemaLine");
+                    //return "VAPRC_PlzCheckDisSchemaLine";
+                }
                 //Getting all the products from product price based on base price list
                 // _Sql = " SELECT ppr.* FROM m_pricelist_version plv INNER JOIN m_productprice ppr  ON(plv.m_pricelist_version_id= ppr.m_pricelist_version_id)"
                 //    + "WHERE plv.m_pricelist_version_id=" + _BasePriceList_ID + " ORDER BY m_product_id, m_attributesetinstance_id asc ";
@@ -199,16 +212,16 @@ namespace ViennaAdvantageServer.Process
                 }
 
 
-                DsProductsPrice = DB.ExecuteDataset(_Sql.ToString());
+                DsProductsPrice = DB.ExecuteDataset(_Sql.ToString(), null, Get_TrxName());
                 _Sql.Clear();
                 // Checking Discount schemaline for every product and productcategory
-                MPriceList pl = new MPriceList(GetCtx(), _PriceList_ID, null);
+                MPriceList pl = new MPriceList(GetCtx(), _PriceList_ID, Get_TrxName());
                 _Precision = pl.GetPricePrecision();
                 if (DsProductsPrice != null)
                 {
                     if (DsProductsPrice.Tables[0].Rows.Count > 0)
                     {                       
-                        MPriceListVersion PriceListVersion = new MPriceListVersion(GetCtx(), 0, null);
+                        MPriceListVersion PriceListVersion = new MPriceListVersion(GetCtx(), 0, Get_TrxName());
                         PriceListVersion.SetAD_Org_ID(AD_Org_ID);
                         PriceListVersion.SetName(Util.GetValueOfString(System.DateTime.Now));
                         PriceListVersion.SetM_PriceList_ID(_PriceList_ID);
@@ -260,7 +273,7 @@ namespace ViennaAdvantageServer.Process
                                     DataRow[] DRProductBased = DsMainRecords.Tables[0].Select("M_Product_ID=" + Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Product_ID"]));
                                     if (DRProductBased.Length > 0)
                                     {
-                                        MProductPrice ProductPrice = new MProductPrice(GetCtx(), 0, null);
+                                        MProductPrice ProductPrice = new MProductPrice(GetCtx(), 0, Get_TrxName());
                                         ProductPrice.SetAD_Org_ID(AD_Org_ID);
                                         ProductPrice.SetM_Product_ID(Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Product_ID"]));
                                         if (_countFormula > 0 && Util.GetValueOfString(DRProductBased[0].ItemArray[20]) == "Y")
@@ -313,13 +326,23 @@ namespace ViennaAdvantageServer.Process
                                         }
                                         ProductPrice.SetM_AttributeSetInstance_ID(Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_ATTRIBUTESETINSTANCE_ID"]));
                                         ProductPrice.SetLot(Util.GetValueOfString(DsProductsPrice.Tables[0].Rows[i]["LOT"]));
-                                        if (ProductPrice.Save())
+                                        if (ProductPrice.Save(Get_TrxName()))
                                         {
                                             Saved = "Saved";
                                         }
                                         else
                                         {
-
+                                            //get the Error and save in Logs
+                                            ValueNamePair pp = VLogger.RetrieveError();
+                                            //some times getting the error pp also
+                                            //Check first GetName() then GetValue() to get proper Error Message
+                                            string error = pp != null ? pp.ToString() ?? pp.GetName() : "";
+                                            if (string.IsNullOrEmpty(error))
+                                            {
+                                                error = pp != null ? pp.GetValue() : "";
+                                            }
+                                            error = !string.IsNullOrEmpty(error) ? error : Msg.GetMsg(GetCtx(), "VAPRC_ProdttPriceNotSaved");
+                                            log.Severe(error);
                                         }
                                         if (Util.GetValueOfString(DRProductBased[0].ItemArray[17]) == "Y")
                                         {
@@ -348,7 +371,7 @@ namespace ViennaAdvantageServer.Process
                                             DataRow[] DRVendorBased = DsMainRecords.Tables[0].Select("C_BPartner_ID=" + Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["Vendor"]));
                                             if (DRVendorBased.Length > 0)
                                             {
-                                                MProductPrice ProductPrice = new MProductPrice(GetCtx(), 0, null);
+                                                MProductPrice ProductPrice = new MProductPrice(GetCtx(), 0, Get_TrxName());
                                                 ProductPrice.SetAD_Org_ID(AD_Org_ID);
                                                 if (_countFormula > 0 && Util.GetValueOfString(DRVendorBased[0].ItemArray[20]) == "Y")
                                                 {
@@ -399,13 +422,23 @@ namespace ViennaAdvantageServer.Process
                                                 }
                                                 ProductPrice.SetM_AttributeSetInstance_ID(Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_ATTRIBUTESETINSTANCE_ID"]));
                                                 ProductPrice.SetLot(Util.GetValueOfString(DsProductsPrice.Tables[0].Rows[i]["LOT"]));
-                                                if (ProductPrice.Save())
+                                                if (ProductPrice.Save(Get_TrxName()))
                                                 {
                                                     Saved = "Saved";
                                                 }
                                                 else
                                                 {
-
+                                                    //get the Error and save in Logs
+                                                    ValueNamePair pp = VLogger.RetrieveError();
+                                                    //some times getting the error pp also
+                                                    //Check first GetName() then GetValue() to get proper Error Message
+                                                    string error = pp != null ? pp.ToString() ?? pp.GetName() : "";
+                                                    if (string.IsNullOrEmpty(error))
+                                                    {
+                                                        error = pp != null ? pp.GetValue() : "";
+                                                    }
+                                                    error = !string.IsNullOrEmpty(error) ? error : Msg.GetMsg(GetCtx(), "VAPRC_ProdttPriceNotSaved");
+                                                    log.Severe(error);
                                                 }
                                                 if (Util.GetValueOfString(DRVendorBased[0].ItemArray[17]) == "Y")
                                                 {
@@ -427,12 +460,12 @@ namespace ViennaAdvantageServer.Process
                                             else
                                             {
                                                 _Sql.Append("SELECT  M_Product_Category_ID FROM M_Product WHERE M_Product_ID=" + Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Product_ID"]));
-                                                int _ProductCategory_ID = Util.GetValueOfInt(DB.ExecuteScalar(_Sql.ToString()));
+                                                int _ProductCategory_ID = Util.GetValueOfInt(DB.ExecuteScalar(_Sql.ToString(),null, Get_TrxName()));
                                                 _Sql.Clear();
                                                 DataRow[] DRProdCategoryBased = DsMainRecords.Tables[0].Select("M_Product_Category_ID=" + _ProductCategory_ID);
                                                 if (DRProdCategoryBased.Length > 0)
                                                 {
-                                                    MProductPrice ProductPrice = new MProductPrice(GetCtx(), 0, null);
+                                                    MProductPrice ProductPrice = new MProductPrice(GetCtx(), 0, Get_TrxName());
                                                     ProductPrice.SetAD_Org_ID(AD_Org_ID);
                                                     ProductPrice.SetM_Product_ID(Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Product_ID"]));
                                                     if (_countFormula > 0 && Util.GetValueOfString(DRProdCategoryBased[0].ItemArray[20]) == "Y")
@@ -484,13 +517,23 @@ namespace ViennaAdvantageServer.Process
                                                     }
                                                     ProductPrice.SetM_AttributeSetInstance_ID(Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_ATTRIBUTESETINSTANCE_ID"]));
                                                     ProductPrice.SetLot(Util.GetValueOfString(DsProductsPrice.Tables[0].Rows[i]["LOT"]));
-                                                    if (ProductPrice.Save())
+                                                    if (ProductPrice.Save(Get_TrxName()))
                                                     {
                                                         Saved = "Saved";
                                                     }
                                                     else
                                                     {
-
+                                                        //get the Error and save in Logs
+                                                        ValueNamePair pp = VLogger.RetrieveError();
+                                                        //some times getting the error pp also
+                                                        //Check first GetName() then GetValue() to get proper Error Message
+                                                        string error = pp != null ? pp.ToString() ?? pp.GetName() : "";
+                                                        if (string.IsNullOrEmpty(error))
+                                                        {
+                                                            error = pp != null ? pp.GetValue() : "";
+                                                        }
+                                                        error = !string.IsNullOrEmpty(error) ? error : Msg.GetMsg(GetCtx(), "VAPRC_ProdttPriceNotSaved");
+                                                        log.Severe(error);
                                                     }
                                                     if (Util.GetValueOfString(DRProdCategoryBased[0].ItemArray[17]) == "Y")
                                                     {
@@ -515,7 +558,7 @@ namespace ViennaAdvantageServer.Process
 
                                                 else
                                                 {
-                                                    MProductPrice ProductPrice = new MProductPrice(GetCtx(), 0, null);
+                                                    MProductPrice ProductPrice = new MProductPrice(GetCtx(), 0, Get_TrxName());
                                                     ProductPrice.SetAD_Org_ID(AD_Org_ID);
                                                     ProductPrice.SetM_Product_ID(Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Product_ID"]));
                                                     if (_countFormula > 0 && _IsListFormula == "Y")
@@ -561,13 +604,23 @@ namespace ViennaAdvantageServer.Process
                                                     }
                                                     ProductPrice.SetM_AttributeSetInstance_ID(Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_ATTRIBUTESETINSTANCE_ID"]));
                                                     ProductPrice.SetLot(Util.GetValueOfString(DsProductsPrice.Tables[0].Rows[i]["LOT"]));
-                                                    if (ProductPrice.Save())
+                                                    if (ProductPrice.Save(Get_TrxName()))
                                                     {
                                                         Saved = "Saved";
                                                     }
                                                     else
                                                     {
-
+                                                        //get the Error and save in Logs
+                                                        ValueNamePair pp = VLogger.RetrieveError();
+                                                        //some times getting the error pp also
+                                                        //Check first GetName() then GetValue() to get proper Error Message
+                                                        string error = pp != null ? pp.ToString() ?? pp.GetName() : "";
+                                                        if (string.IsNullOrEmpty(error))
+                                                        {
+                                                            error = pp != null ? pp.GetValue() : "";
+                                                        }
+                                                        error = !string.IsNullOrEmpty(error) ? error : Msg.GetMsg(GetCtx(), "VAPRC_ProdttPriceNotSaved");
+                                                        log.Severe(error);
                                                     }
                                                     if (_KeepPricesForPrevLot == "Y")
                                                     {
@@ -594,12 +647,12 @@ namespace ViennaAdvantageServer.Process
                                         else
                                         {
                                             _Sql.Append("SELECT  M_Product_Category_ID FROM M_Product WHERE M_Product_ID=" + Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Product_ID"]));
-                                            int _ProductCategory_ID = Util.GetValueOfInt(DB.ExecuteScalar(_Sql.ToString()));
+                                            int _ProductCategory_ID = Util.GetValueOfInt(DB.ExecuteScalar(_Sql.ToString(), null, Get_TrxName()));
                                             _Sql.Clear();
                                             DataRow[] DRProdCategoryBased = DsMainRecords.Tables[0].Select("M_Product_Category_ID=" + _ProductCategory_ID);
                                             if (DRProdCategoryBased.Length > 0)
                                             {
-                                                MProductPrice ProductPrice = new MProductPrice(GetCtx(), 0, null);
+                                                MProductPrice ProductPrice = new MProductPrice(GetCtx(), 0, Get_TrxName());
                                                 ProductPrice.SetAD_Org_ID(AD_Org_ID);
                                                 ProductPrice.SetM_Product_ID(Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Product_ID"]));
                                                 if (_countFormula > 0 && Util.GetValueOfString(DRProdCategoryBased[0].ItemArray[20]) == "Y")
@@ -651,13 +704,23 @@ namespace ViennaAdvantageServer.Process
                                                 }
                                                 ProductPrice.SetM_AttributeSetInstance_ID(Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_ATTRIBUTESETINSTANCE_ID"]));
                                                 ProductPrice.SetLot(Util.GetValueOfString(DsProductsPrice.Tables[0].Rows[i]["LOT"]));
-                                                if (ProductPrice.Save())
+                                                if (ProductPrice.Save(Get_TrxName()))
                                                 {
                                                     Saved = "Saved";
                                                 }
                                                 else
                                                 {
-
+                                                    //get the Error and save in Logs
+                                                    ValueNamePair pp = VLogger.RetrieveError();
+                                                    //some times getting the error pp also
+                                                    //Check first GetName() then GetValue() to get proper Error Message
+                                                    string error = pp != null ? pp.ToString() ?? pp.GetName() : "";
+                                                    if (string.IsNullOrEmpty(error))
+                                                    {
+                                                        error = pp != null ? pp.GetValue() : "";
+                                                    }
+                                                    error = !string.IsNullOrEmpty(error) ? error : Msg.GetMsg(GetCtx(), "VAPRC_ProdttPriceNotSaved");
+                                                    log.Severe(error);
                                                 }
                                                 if (Util.GetValueOfString(DRProdCategoryBased[0].ItemArray[17]) == "Y")
                                                 {
@@ -679,7 +742,7 @@ namespace ViennaAdvantageServer.Process
 
                                             else
                                             {
-                                                MProductPrice ProductPrice = new MProductPrice(GetCtx(), 0, null);
+                                                MProductPrice ProductPrice = new MProductPrice(GetCtx(), 0, Get_TrxName());
                                                 ProductPrice.SetAD_Org_ID(AD_Org_ID);
                                                 ProductPrice.SetM_Product_ID(Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Product_ID"]));
                                                 if (_countFormula > 0 && _IsListFormula == "Y")
@@ -725,13 +788,23 @@ namespace ViennaAdvantageServer.Process
                                                 }
                                                 ProductPrice.SetM_AttributeSetInstance_ID(Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_ATTRIBUTESETINSTANCE_ID"]));
                                                 ProductPrice.SetLot(Util.GetValueOfString(DsProductsPrice.Tables[0].Rows[i]["LOT"]));
-                                                if (ProductPrice.Save())
+                                                if (ProductPrice.Save(Get_TrxName()))
                                                 {
                                                     Saved = "Saved";
                                                 }
                                                 else
                                                 {
-
+                                                    //get the Error and save in Logs
+                                                    ValueNamePair pp = VLogger.RetrieveError();
+                                                    //some times getting the error pp also
+                                                    //Check first GetName() then GetValue() to get proper Error Message
+                                                    string error = pp != null ? pp.ToString() ?? pp.GetName() : "";
+                                                    if (string.IsNullOrEmpty(error))
+                                                    {
+                                                        error = pp != null ? pp.GetValue() : "";
+                                                    }
+                                                    error = !string.IsNullOrEmpty(error) ? error : Msg.GetMsg(GetCtx(), "VAPRC_ProdttPriceNotSaved");
+                                                    log.Severe(error);
                                                 }
                                                 if (_KeepPricesForPrevLot == "Y")
                                                 {
@@ -766,13 +839,21 @@ namespace ViennaAdvantageServer.Process
                         {
                             DsProductsPrice.Dispose();
                             DsMainRecords.Dispose();
-                            return Msg.GetMsg(GetCtx(), "VAPRC_PriceListVersionNotSaved");
+                            ValueNamePair pp = VLogger.RetrieveError();
+                            //some times getting the error pp also
+                            //Check first GetName() then GetValue() to get proper Error Message
+                            string error = pp != null ? pp.ToString() ?? pp.GetName() : "";
+                            if (string.IsNullOrEmpty(error))
+                            {
+                                error = pp != null ? pp.GetValue() : "";
+                            }
+                            return !string.IsNullOrEmpty(error) ? error : Msg.GetMsg(GetCtx(), "VAPRC_PriceListVersionNotSaved");
+                            //return Msg.GetMsg(GetCtx(), "VAPRC_PriceListVersionNotSaved");
                         }
                     }
                     else
                     {
-                        //if no record found on ProductPrice against base Price List
-                        //or on DiscountScmehaLine of Selected Discount Schema 
+                        //check if Base Price List has Product Price to create or update the Product Cost
                         return Msg.GetMsg(GetCtx(),"VAPRC_DataNotFound");
                     }
                 }
@@ -810,8 +891,6 @@ namespace ViennaAdvantageServer.Process
                 }
             }
             return "";
-
-
         }
 
         //Previous Lot Based Entries

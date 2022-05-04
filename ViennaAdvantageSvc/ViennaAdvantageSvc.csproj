@@ -35,8 +35,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BaseLibrary">
+      <HintPath>..\..\..\..\Package Dll\BaseLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="CoreLibrary">
+      <HintPath>..\..\..\..\Package Dll\CoreLibrary.dll</HintPath>
+    </Reference>
     <Reference Include="ModelLibrary">
-      <HintPath>..\ViennaAdvantageWeb\DLL\ModelLibrary.dll</HintPath>
+      <HintPath>..\..\..\..\Package Dll\ModelLibrary.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -45,6 +51,12 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="VAModelAD">
+      <HintPath>..\..\..\..\Package Dll\VAModelAD.dll</HintPath>
+    </Reference>
+    <Reference Include="XModel">
+      <HintPath>..\..\..\..\Package Dll\XModel.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\MVAPRCException.cs" />

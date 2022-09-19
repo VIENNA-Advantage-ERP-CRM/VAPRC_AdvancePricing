@@ -1268,7 +1268,7 @@ namespace ViennaAdvantageServer.Process
         decimal _ListFixed = 0, _StdFixed = 0, _LimitFixed = 0, _listAddAmt = 0, _StdAddAmt = 0, _LimitAddAmt = 0, _ListDiscount = 0, _StdDiscount = 0, _LimitDiscount = 0;
         string _ListRounding = "", _StdRounding = "", _LimitRounding = "", _ListBaseVal = "", _StdBaseVal = "", _LimitBaseVal = "", _Org_ID = "";
         string _IsListFormula = "", _IsStdFormula = "", _IsLimitFormula = "", _ListFormula = "", _StdFormula = "", _LimitFormula = "";
-        string _KeepPricesForPrevLot = "";
+        string _KeepPricesForPrevLot = "", message1 = "";
         //, Saved = "";
         List<int> ProductsExecuted = new List<int>();
         List<int> AttributesExecutes = new List<int>();
@@ -1334,7 +1334,6 @@ namespace ViennaAdvantageServer.Process
             try
             {
                 String SkipDelCheck = SkipDel;
-               
 
                 _CountED011 = Util.GetValueOfInt(DB.ExecuteScalar("SELECT COUNT(AD_MODULEINFO_ID) FROM AD_MODULEINFO WHERE PREFIX='ED011_'"));
                 _countFormula = Util.GetValueOfInt(DB.ExecuteScalar("SELECT Count(*) FROM AD_Column WHERE ColumnName = 'IsListFormula' AND AD_Table_ID = 477"));
@@ -1813,7 +1812,7 @@ namespace ViennaAdvantageServer.Process
                                                                 {
                                                                     DeleteExisting(Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Product_ID"]), Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_ATTRIBUTESETINSTANCE_ID"]), _Record_ID, C_UOM_ID);
                                                                 }
-
+                                                                
                                                                 if (SaveProdPrice(AD_Org_ID,
                                                                         Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Product_ID"]),
                                                                         _Record_ID,
@@ -1847,7 +1846,7 @@ namespace ViennaAdvantageServer.Process
                                                                         Util.GetValueOfString(DRProductBased[0].ItemArray[26]),    //_LimitFormula
                                                                         ctx,
                                                                         Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Brand_ID"]),
-                                                                        Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Product_Category_ID"]), IsExceptionFound))
+                                                                        Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Product_Category_ID"]), IsExceptionFound,out message1))
                                                                 {
                                                                     if (Util.GetValueOfString(DRProductBased[0].ItemArray[17]) == "Y")
                                                                     {
@@ -1872,6 +1871,8 @@ namespace ViennaAdvantageServer.Process
                                                                 else
                                                                 {
                                                                     IsExceptionFound = false;
+                                                                    //Msg.GetMsg(ctx, message1);
+                                                                    _msg += message1;
                                                                     // FlagNotSaved = true;
                                                                 }
                                                             }
@@ -1914,7 +1915,7 @@ namespace ViennaAdvantageServer.Process
                                                                          _LimitFormula,
                                                                          ctx,
                                                                     Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Brand_ID"]),
-                                                                    Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Product_Category_ID"]), IsExceptionFound))
+                                                                    Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Product_Category_ID"]), IsExceptionFound, out message1))
                                                                 {
                                                                     if (_KeepPricesForPrevLot == "Y")
                                                                     {
@@ -1939,6 +1940,7 @@ namespace ViennaAdvantageServer.Process
                                                                 else
                                                                 {
                                                                     IsExceptionFound = false;
+                                                                    _msg += message1;
                                                                     //FlagNotSaved = true;
                                                                 }
                                                             }
@@ -2000,7 +2002,7 @@ namespace ViennaAdvantageServer.Process
                                                                         Util.GetValueOfString(DRProductBased[0].ItemArray[26]),
                                                                         ctx,
                                                                         Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Brand_ID"]),
-                                                                        Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Product_Category_ID"]), IsExceptionFound)
+                                                                        Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Product_Category_ID"]), IsExceptionFound, out message1)
                                                                     )
                                                                 {
                                                                     if (Util.GetValueOfString(DRProductBased[0].ItemArray[17]) == "Y")
@@ -2025,7 +2027,8 @@ namespace ViennaAdvantageServer.Process
                                                                 }
                                                                 else
                                                                 {
-                                                                    _msg = Msg.GetMsg(ctx, "VAPRC_LineNotSaved");
+                                                                    //_msg = Msg.GetMsg(ctx, "VAPRC_LineNotSaved");
+                                                                    _msg += message1;
                                                                     //FlagNotSaved = true;
                                                                     return _msg;
                                                                 }
@@ -2069,7 +2072,7 @@ namespace ViennaAdvantageServer.Process
                                                                          _LimitFormula,
                                                                          ctx,
                                                                     Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Brand_ID"]),
-                                                                    Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Product_Category_ID"]), IsExceptionFound))
+                                                                    Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Product_Category_ID"]), IsExceptionFound,out message1))
                                                                 {
                                                                     if (_KeepPricesForPrevLot == "Y")
                                                                     {
@@ -2095,7 +2098,8 @@ namespace ViennaAdvantageServer.Process
                                                                 }
                                                                 else
                                                                 {
-                                                                    _msg = Msg.GetMsg(ctx, "VAPRC_LineNotSaved");
+                                                                    _msg += message1;
+                                                                    //_msg = Msg.GetMsg(ctx, "VAPRC_LineNotSaved");
                                                                     //FlagNotSaved = true;
                                                                     return _msg;
                                                                 }
@@ -2153,7 +2157,7 @@ namespace ViennaAdvantageServer.Process
                                                                       _LimitFormula,
                                                                       ctx,
                                                                 Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Brand_ID"]),
-                                                                Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Product_Category_ID"]), IsExceptionFound))
+                                                                Util.GetValueOfInt(DsProductsPrice.Tables[0].Rows[i]["M_Product_Category_ID"]), IsExceptionFound, out message1))
                                                             {
                                                                 if (_KeepPricesForPrevLot == "Y")
                                                                 {
@@ -2178,7 +2182,8 @@ namespace ViennaAdvantageServer.Process
                                                             }
                                                             else
                                                             {
-                                                                _msg = Msg.GetMsg(ctx, "VAPRC_LineNotSaved");
+                                                                _msg += message1;
+                                                                //_msg = Msg.GetMsg(ctx, "VAPRC_LineNotSaved");
                                                                 // FlagNotSaved = true;
                                                                 return _msg;
                                                             }
@@ -2802,10 +2807,11 @@ namespace ViennaAdvantageServer.Process
            decimal _ListFixed, decimal _StdFixed, decimal _LimitFixed, decimal _listAddAmt, decimal _StdAddAmt, decimal _LimitAddAmt, decimal _ListDiscount, decimal _StdDiscount,
            decimal _LimitDiscount, string _ListRounding, string _StdRounding, string _LimitRounding, int Precision, decimal PriceList, decimal PriceStd, decimal PriceLimit,
            string _IsListFormula, string _IsStdFormula, string _IsLimitFormula, string _ListFormula, string _StdFormula, string _LimitFormula, Ctx ctx,
-           int M_Brand_ID, int M_Product_Category_ID, bool exceptionFound)
+           int M_Brand_ID, int M_Product_Category_ID, bool exceptionFound,out string message1)
         {
             try
             {
+                
                 PriceListAmt = 0;
                 PriceStdAmt = 0;
                 PriceLimitAmt = 0;
@@ -2834,7 +2840,7 @@ namespace ViennaAdvantageServer.Process
                 {
                     PriceLimitAmt = Calculate(_LimitBaseVal, PriceList, PriceStd, PriceLimit, _LimitFixed, _LimitAddAmt, _LimitDiscount, _LimitRounding, _Precision, exceptionFound);
                 }
-
+              
 
                 #region Creating a new price for the Product for the current Version
 
@@ -2848,6 +2854,7 @@ namespace ViennaAdvantageServer.Process
                 pp.SetIsActive(true);
                 pp.SetM_PriceList_Version_ID(Record_ID);
                 pp.SetM_Product_ID(Product_ID);
+                message1 = "";
                 // to set precision google sheet issue ID SI_418
                 int _Plpresecion = 0;
                 if (_plv != null && _plv.GetM_PriceList_ID() > 0)
@@ -2856,18 +2863,19 @@ namespace ViennaAdvantageServer.Process
                     _Plpresecion = pl.GetPricePrecision();
                 }
 
+                if (PriceListAmt < PriceLimitAmt || PriceStdAmt < PriceLimitAmt)
+                {
+                    //out string msg;
+                    message1 = "Limit is greter than Listprice";
+                    return false;
+                }
                 if (_Plpresecion > 0)
                 {
                     pp.SetPriceLimit(Math.Round(PriceLimitAmt, _Plpresecion));
                     pp.SetPriceList(Math.Round(PriceListAmt, _Plpresecion));
                     pp.SetPriceStd(Math.Round(PriceStdAmt, _Plpresecion));
                 }
-                else
-                {
-                    pp.SetPriceLimit(PriceLimitAmt);
-                    pp.SetPriceList(PriceListAmt);
-                    pp.SetPriceStd(PriceStdAmt);
-                }
+              
                 pp.SetM_AttributeSetInstance_ID(AttributeSetInstance_ID);
                 if (_CountED011 > 0)
                     pp.SetC_UOM_ID(C_Uom_ID);
@@ -2885,6 +2893,7 @@ namespace ViennaAdvantageServer.Process
                 _log.Info("Error occured during Inserting price list in Product Price");
                 _msg = e.Message;
             }
+            message1 = "";
             return false;
         }
         // Calculate Method Formula Based
@@ -2925,7 +2934,7 @@ namespace ViennaAdvantageServer.Process
                         {
                             dd += Convert.ToDouble(add);//.doubleValue();
                         }
-                        if (Env.Signum(discount) != 0)
+                        if (Env.Signum(discount) != 0 && std > limit && list > limit)
                         {
                             dd *= 1 - (Convert.ToDouble(discount) / 100.0);
                         }

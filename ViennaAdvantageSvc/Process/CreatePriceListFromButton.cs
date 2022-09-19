@@ -2866,7 +2866,7 @@ namespace ViennaAdvantageServer.Process
                 if (PriceListAmt < PriceLimitAmt || PriceStdAmt < PriceLimitAmt)
                 {
                     //out string msg;
-                    message1 = "Limit is greter than Listprice";
+                    message1 = "VAPRC_ExceedLimit";
                     return false;
                 }
                 if (_Plpresecion > 0)

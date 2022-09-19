@@ -2863,10 +2863,11 @@ namespace ViennaAdvantageServer.Process
                     _Plpresecion = pl.GetPricePrecision();
                 }
 
+                //VA319 ||   When PriceListAmt or PriceStdAmt is less Than PriceLimitAmt
                 if (PriceListAmt < PriceLimitAmt || PriceStdAmt < PriceLimitAmt)
                 {
                     //out string msg;
-                    message1 = "VAPRC_ExceedLimit";
+                    message1 = Msg.GetMsg(ctx,"VAPRC_ExceedLimit");
                     return false;
                 }
                 if (_Plpresecion > 0)
@@ -2875,7 +2876,12 @@ namespace ViennaAdvantageServer.Process
                     pp.SetPriceList(Math.Round(PriceListAmt, _Plpresecion));
                     pp.SetPriceStd(Math.Round(PriceStdAmt, _Plpresecion));
                 }
-              
+                else
+                {
+                    pp.SetPriceLimit(PriceLimitAmt);
+                    pp.SetPriceList(PriceListAmt);
+                    pp.SetPriceStd(PriceStdAmt);
+                }
                 pp.SetM_AttributeSetInstance_ID(AttributeSetInstance_ID);
                 if (_CountED011 > 0)
                     pp.SetC_UOM_ID(C_Uom_ID);
